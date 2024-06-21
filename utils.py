@@ -108,3 +108,37 @@ def splitBoxes(img):
     
     return boxes
 
+def draw_circles_on_image(image, binary_array):
+    """
+    Draws circles on the provided image based on the binary_array where 1s indicate the positions of the circles.
+
+    Parameters:
+    - image: np.array (The image on which to draw the circles)
+    - binary_array: np.array (A binary array indicating where to draw circles)
+
+    Returns:
+    - np.array: The image with circles drawn on it.
+    """
+    # Get the dimensions of the image and the binary array
+    img_height, img_width = image.shape[:2]
+    array_height, array_width = binary_array.shape
+
+    # Calculate the dimensions of each grid cell for the circles
+    cell_width = img_width // array_width
+    cell_height = img_height // array_height
+    circle_radius = min(cell_width, cell_height) // 2  # Radius based on the smaller dimension
+
+    # Loop through the binary array to draw circles at positions with 1s
+    for i in range(array_height):
+        for j in range(array_width):
+            if binary_array[i, j] == 1:
+                # Calculate the center of the circle
+                x_center = j * cell_width + cell_width // 2
+                y_center = i * cell_height + cell_height // 2
+                # Draw the circle on the image
+                cv2.circle(image, (x_center, y_center), circle_radius, (0, 255, 0), -1)  # -1 fills the circle
+
+    return image
+
+
+

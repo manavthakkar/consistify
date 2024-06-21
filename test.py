@@ -3,6 +3,7 @@ import numpy as np
 import utils
 
 habits = 6
+threshold = 550 # Threshold for checking if a box is marked or not
 
 # Load the image
 img = cv2.imread('habit-tracker-marked.jpg')  
@@ -95,10 +96,15 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     print(myPixelVal)     # Print the non-zero pixel values of each box
     # print("The size of the pixel values array: ", myPixelVal.shape)         # (6,31)
 
-    # Create a new array with 1 where the pixel value is greater than 550, and 0 otherwise (Check if marked or not)
-    binary_array = np.where(myPixelVal > 550, 1, 0)
-
+    # Create a new array with 1 where the pixel value is greater than threshold, and 0 otherwise (Check if marked or not)
+    binary_array = np.where(myPixelVal > threshold, 1, 0)
     print(binary_array)
+
+    # Display the marked boxes
+    imgMarked = imgWarpColored.copy()
+    imgMarked = utils.draw_circles_on_image(imgMarked, binary_array)
+    cv2.imshow('Marked Image', imgMarked)
+    
 
 # Display the image
 #cv2.imshow('Original Image', img)
