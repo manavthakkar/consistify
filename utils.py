@@ -85,3 +85,26 @@ def reorder(myPoints):
     myPointsNew[2] = myPoints[np.argmax(diff)] #[h,0]    
 
     return myPointsNew
+
+
+def splitBoxes(img):
+    """
+    This function takes the image as input and returns the split boxes (6x31)
+    """
+    rows = np.vsplit(img, 6)  # SPLIT THE IMAGE INTO 6 ROWS
+    boxes = []  # array to store all boxes
+    
+    for r in rows:
+        # Calculate the width of each column
+        col_width = r.shape[1] // 31
+        extra_pixels = r.shape[1] % 31
+        
+        for i in range(31):
+            if i < extra_pixels:
+                col = r[:, i*col_width + i:(i+1)*col_width + i + 1]  # Add an extra pixel for the first 'extra_pixels' columns
+            else:
+                col = r[:, i*col_width + extra_pixels:(i+1)*col_width + extra_pixels]
+            boxes.append(col)
+    
+    return boxes
+

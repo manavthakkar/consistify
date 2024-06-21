@@ -2,8 +2,10 @@ import cv2
 import numpy as np
 import utils
 
+habits = 6
+
 # Load the image
-img = cv2.imread('habit-tracker.jpg')  
+img = cv2.imread('habit-tracker-marked.jpg')  
 
 
 # Preprocess the image
@@ -53,17 +55,50 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     ptS2 = np.float32([[0, 0], [1024, 0], [0, 576], [1024, 576]])
     matrixS = cv2.getPerspectiveTransform(ptS1, ptS2)
     imgWarpColoredS = cv2.warpPerspective(img, matrixS, (1024, 576))
-    cv2.imshow('Warped Image Second', imgWarpColoredS)
+    # cv2.imshow('Warped Image Second', imgWarpColoredS)
 
     # Warp the third biggest rectangle
     ptT1 = np.float32(third_biggest_rectCon)
     ptT2 = np.float32([[0, 0], [1024, 0], [0, 576], [1024, 576]])
     matrixT = cv2.getPerspectiveTransform(ptT1, ptT2)
     imgWarpColoredT = cv2.warpPerspective(img, matrixT, (1024, 576))
-    cv2.imshow('Warped Image Third', imgWarpColoredT)
+    # cv2.imshow('Warped Image Third', imgWarpColoredT)
 
+    # Convert the warped image to grayscale
+    imgWarpGray = cv2.cvtColor(imgWarpColored, cv2.COLOR_BGR2GRAY)
+    imgWarpGrayS = cv2.cvtColor(imgWarpColoredS, cv2.COLOR_BGR2GRAY)
+    imgWarpGrayT = cv2.cvtColor(imgWarpColoredT, cv2.COLOR_BGR2GRAY)
 
+    # Apply threshold to the warped image
+    imgThresh = cv2.threshold(imgWarpGray, 170, 255, cv2.THRESH_BINARY_INV)[1]
+    imgThreshS = cv2.threshold(imgWarpGrayS, 170, 255, cv2.THRESH_BINARY_INV)[1]
+    imgThreshT = cv2.threshold(imgWarpGrayT, 170, 255, cv2.THRESH_BINARY_INV)[1]
 
+    boxes = utils.splitBoxes(imgThresh)
+
+    # Display the boxes one by one
+    # for i in range(0, 185):
+    #     cv2.imshow('test', boxes[i]) # 0 - 185 boxes
+    #     cv2.waitKey(0)
+
+    # Getting the non-zero pixel values of each box
+    countR = 0
+    countC = 0
+    myPixelVal = np.zeros((habits, 31))
+    for image in boxes:
+        totalPixels = cv2.countNonZero(image)
+        myPixelVal[countR][countC] = totalPixels
+        countC += 1
+        if countC == 31:
+            countR += 1
+            countC = 0
+    print(myPixelVal)     # Print the non-zero pixel values of each box
+    # print("The size of the pixel values array: ", myPixelVal.shape)         # (6,31)
+
+    # Create a new array with 1 where the pixel value is greater than 550, and 0 otherwise (Check if marked or not)
+    binary_array = np.where(myPixelVal > 550, 1, 0)
+
+    print(binary_array)
 
 # Display the image
 #cv2.imshow('Original Image', img)
@@ -73,6 +108,6 @@ imgArray = ([img, gray_image, blurred_image, canny_image],
 
 # Display the stacked images
 stacked_images = utils.stackImages(imgArray, 0.5)
-cv2.imshow('Stacked Images', stacked_images)
+#cv2.imshow('Stacked Images', stacked_images)
 
 cv2.waitKey(0)
