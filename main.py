@@ -8,9 +8,10 @@ imgHeight = 744                     # should be divisible by 6 (habits)
 habits = 6
 threshold = 1000                    # Threshold for checking if a box is marked or not
 
-# Load the image
-img = cv2.imread('test1.jpg')
+img_path = 'test.jpg'
 
+# Load the image
+img = cv2.imread(img_path)
 
 # Resize the image
 scale_percent = 60
