@@ -112,6 +112,28 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     imgMarked = utils.draw_circles_on_image(imgMarked, binary_array)
     cv2.imshow('Marked Image', imgMarked)
 
+    # Create a black image of same shape of imgWarpColored to display circles
+    imgRawCircles = np.zeros_like(imgWarpColored)
+    imgRawCircles = utils.draw_circles_on_image(imgRawCircles, binary_array)
+    cv2.imshow('Raw Circles Image', imgRawCircles)
+
+    # Inverse warp the raw circles image (This will be a black image with circles)
+    invMatrix = cv2.getPerspectiveTransform(pt2, pt1)
+    imgInvWarp = cv2.warpPerspective(imgRawCircles, invMatrix, (img.shape[1], img.shape[0])) # img.shape[1] = width, img.shape[0] = height
+    cv2.imshow('Inverse Warped Image', imgInvWarp)
+
+    # Add the inverse warped image to the original image
+    # imgFinal = cv2.addWeighted(img, 1, imgInvWarp, 1.5, 10)
+    # cv2.imshow('Final Image', imgFinal)
+
+    # Overlay using mask (Replace only the non-zero pixels of imgInvWarp with the original image pixels)
+    imgFinal = img.copy()
+    mask = np.any(imgInvWarp != 0, axis=-1)
+    imgFinal[mask] = imgInvWarp[mask]
+    
+    cv2.imshow('Final Image', imgFinal)
+    
+
 # cv2.imshow('Original Image', img)
 # cv2.imshow('Gray Image', imgGray)
 # cv2.imshow('Blur Image', imgBlur)
