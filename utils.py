@@ -46,7 +46,7 @@ def rectContour(contours):
     rectCon = []                        # List to store all rectangle contours
     for i in contours:
         area = cv2.contourArea(i)
-        print(area)
+        # print(area)
         if area > 50:                    # Minimum area of rectangle
             peri = cv2.arcLength(i, True) # Calculate the perimeter of the contour (True: closed contour)
             approx = cv2.approxPolyDP(i, 0.02 * peri, True) # Approximate the polygon (how many corner points it has) (contour, resolution, closed)
@@ -87,11 +87,11 @@ def reorder(myPoints):
     return myPointsNew
 
 
-def splitBoxes(img):
+def splitBoxes(img, habits=6):
     """
     This function takes the image as input and returns the split boxes (6x31)
     """
-    rows = np.vsplit(img, 6)  # SPLIT THE IMAGE INTO 6 ROWS
+    rows = np.vsplit(img, habits)  # SPLIT THE IMAGE INTO 6 ROWS
     boxes = []  # array to store all boxes
     
     for r in rows:
