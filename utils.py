@@ -140,5 +140,70 @@ def draw_circles_on_image(image, binary_array):
 
     return image
 
+def apply_stats_to_image(image, stats, vertical_adjustment_factor=0.1):
+    """
+    Apply grades to an image with evenly distributed boxes and return the annotated image.
+
+    Args:
+    image (np.array): Image to annotate.
+    grades (list of int): List of grades to display on the image.
+    vertical_adjustment_factor (float): Factor to adjust vertical position of text.
+
+    Returns:
+    np.array: Annotated image as a numpy array.
+    """
+
+    # Calculate the width of each box assuming they are evenly spaced
+    box_width = image.shape[1] // len(stats)
+
+    # Define font, size, and color for the text
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 1
+    font_color = (0, 255, 0)  # Black color
+    thickness = 2
+
+    # Place each grade dynamically adjusted above the center of each box
+    for i, grade in enumerate(stats):
+        text = str(grade)
+        text_size = cv2.getTextSize(text, font, font_scale, thickness)[0]
+        text_x = int((box_width * i) + (box_width - text_size[0]) / 2)
+        center_y = int(image.shape[0] / 2)
+        vertical_shift = int(image.shape[0] * vertical_adjustment_factor)
+        text_y = center_y - vertical_shift  # Move text up by a fraction of the image height
+        cv2.putText(image, text, (text_x, text_y), font, font_scale, font_color, thickness)
+
+    return image
+
+def count_total_days(habit_array):
+    # Sum each row to get the number of days each habit was performed
+    days_performed = np.sum(habit_array, axis=1)
+    return days_performed
+
+def get_longest_streak(habit_array):
+    """
+    Calculate the longest streak of consecutive days each habit was performed.
+
+    Parameters:
+    habit_array (numpy.ndarray): A 2D numpy array where each row represents a habit and each column represents a day of the month. 
+                                 Elements are 1 if the habit was performed on that day and 0 otherwise.
+
+    Returns:
+    numpy.ndarray: An array where each element represents the longest streak of consecutive days the corresponding habit was performed.
+    """
+    def calculate_streak(row):
+        max_streak = 0
+        current_streak = 0
+        for day in row:
+            if day == 1:
+                current_streak += 1
+                max_streak = max(max_streak, current_streak)
+            else:
+                current_streak = 0
+        return max_streak
+
+    streaks = np.array([calculate_streak(row) for row in habit_array])
+    return streaks
+
+
 
 
