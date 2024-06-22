@@ -6,7 +6,7 @@ import utils
 imgWidth = 744                      # should be divisible by 31 (days)
 imgHeight = 744                     # should be divisible by 6 (habits)
 habits = 6
-threshold = 1000                    # Threshold for checking if a box is marked or not
+threshold = 500                    # Threshold for checking if a box is marked or not
 
 img_path = 'test.jpg'
 
@@ -54,10 +54,12 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     third_biggest_rectCon = utils.reorder(third_biggest_rectCon)
 
     # Warp the image
+    markerImgWidth = 1054
+    markerImgHeight = 276
     pt1 = np.float32(biggest_rectCon)
-    pt2 = np.float32([[0, 0], [imgWidth, 0], [0, imgHeight], [imgWidth, imgHeight]])
+    pt2 = np.float32([[0, 0], [markerImgWidth, 0], [0, markerImgHeight], [markerImgWidth, markerImgHeight]])
     matrix = cv2.getPerspectiveTransform(pt1, pt2)
-    imgWarpColored = cv2.warpPerspective(img, matrix, (imgWidth, imgHeight))
+    imgWarpColored = cv2.warpPerspective(img, matrix, (markerImgWidth, markerImgHeight))
     cv2.imshow('Warped Image', imgWarpColored)
 
     # Warp the second biggest rectangle
@@ -126,7 +128,7 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     # imgFinal = cv2.addWeighted(img, 1, imgInvWarp, 1.5, 10)
     # cv2.imshow('Final Image', imgFinal)
 
-    # Overlay using mask (Replace only the non-zero pixels of imgInvWarp with the original image pixels)
+    # # Overlay using mask (Replace only the non-zero pixels of imgInvWarp with the original image pixels)
     imgFinal = img.copy()
     mask = np.any(imgInvWarp != 0, axis=-1)
     imgFinal[mask] = imgInvWarp[mask]

@@ -136,7 +136,7 @@ def draw_circles_on_image(image, binary_array):
                 x_center = j * cell_width + cell_width // 2
                 y_center = i * cell_height + cell_height // 2
                 # Draw the circle on the image
-                cv2.circle(image, (x_center, y_center), circle_radius, (0, 255, 0), -1)  # -1 fills the circle
+                cv2.circle(image, (x_center, y_center), circle_radius, (0, 0, 255), -1)  # -1 fills the circle
 
     return image
 
