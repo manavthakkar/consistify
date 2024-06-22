@@ -122,7 +122,7 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     # Inverse warp the raw circles image (This will be a black image with circles)
     invMatrix = cv2.getPerspectiveTransform(pt2, pt1)
     imgInvWarp = cv2.warpPerspective(imgRawCircles, invMatrix, (img.shape[1], img.shape[0])) # img.shape[1] = width, img.shape[0] = height
-    cv2.imshow('Inverse Warped Image', imgInvWarp)
+    cv2.imshow('Inverse Warped Circle Image', imgInvWarp)
 
     # Add the inverse warped image to the original image
     # imgFinal = cv2.addWeighted(img, 1, imgInvWarp, 1.5, 10)
@@ -133,14 +133,22 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     mask = np.any(imgInvWarp != 0, axis=-1)
     imgFinal[mask] = imgInvWarp[mask]
 
-    # Display the stats
-    imgStats = imgWarpColoredS.copy()
+    # Display the stats on a black image
+    imgRawStats = np.zeros_like(imgWarpColoredS)
     total_days = utils.count_total_days(binary_array)
-    imgStats = utils.apply_stats_to_image(imgStats, total_days, "/31", 0.15) # 0.15 is the vertical adjustment factor
-
+    imgRawStats = utils.apply_stats_to_image(imgRawStats, total_days, "/31", 0.15) # 0.15 is the vertical adjustment factor
     longest_streak = utils.get_longest_streak(binary_array)
-    imgStats = utils.apply_stats_to_image(imgStats, longest_streak, "day streak", -0.2) # -0.2 is the vertical adjustment factor
+    imgStats = utils.apply_stats_to_image(imgRawStats, longest_streak, "day streak", -0.2) # -0.2 is the vertical adjustment factor
     cv2.imshow('Stats Image', imgStats)
+
+    # Inverse warp the stats image
+    invMatrixS = cv2.getPerspectiveTransform(ptS2, ptS1)
+    imgInvWarpStats = cv2.warpPerspective(imgRawStats, invMatrixS, (img.shape[1], img.shape[0]))
+    cv2.imshow('Inverse Warped Stats Image', imgInvWarpStats)
+
+    # Overlay the stats image on the original image
+    maskStats = np.any(imgInvWarpStats != 0, axis=-1)
+    imgFinal[maskStats] = imgInvWarpStats[maskStats]
     
     cv2.imshow('Final Image', imgFinal)
     
