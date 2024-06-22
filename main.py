@@ -132,6 +132,15 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     imgFinal = img.copy()
     mask = np.any(imgInvWarp != 0, axis=-1)
     imgFinal[mask] = imgInvWarp[mask]
+
+    # Display the stats
+    imgStats = imgWarpColoredS.copy()
+    total_days = utils.count_total_days(binary_array)
+    imgStats = utils.apply_stats_to_image(imgStats, total_days, "/31", 0.15) # 0.15 is the vertical adjustment factor
+
+    longest_streak = utils.get_longest_streak(binary_array)
+    imgStats = utils.apply_stats_to_image(imgStats, longest_streak, "day streak", -0.2) # -0.2 is the vertical adjustment factor
+    cv2.imshow('Stats Image', imgStats)
     
     cv2.imshow('Final Image', imgFinal)
     

@@ -140,13 +140,14 @@ def draw_circles_on_image(image, binary_array):
 
     return image
 
-def apply_stats_to_image(image, stats, vertical_adjustment_factor=0.1):
+def apply_stats_to_image(image, stats, suffix_text="", vertical_adjustment_factor=0.1):
     """
-    Apply grades to an image with evenly distributed boxes and return the annotated image.
+    Apply stats to an image with evenly distributed boxes and return the annotated image.
 
     Args:
     image (np.array): Image to annotate.
-    grades (list of int): List of grades to display on the image.
+    stats (list of int): List of stats to display on the image.
+    suffix_text (str): Suffix text to display after each stat.
     vertical_adjustment_factor (float): Factor to adjust vertical position of text.
 
     Returns:
@@ -158,19 +159,34 @@ def apply_stats_to_image(image, stats, vertical_adjustment_factor=0.1):
 
     # Define font, size, and color for the text
     font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 1
-    font_color = (0, 255, 0)  # Black color
+    font_scale_large = 1
+    font_scale_small = 0.5
+    font_color = (255, 0, 0)  
     thickness = 2
 
-    # Place each grade dynamically adjusted above the center of each box
-    for i, grade in enumerate(stats):
-        text = str(grade)
-        text_size = cv2.getTextSize(text, font, font_scale, thickness)[0]
-        text_x = int((box_width * i) + (box_width - text_size[0]) / 2)
+    # Place each stat dynamically adjusted above the center of each box
+    for i, stat in enumerate(stats):
+        number_text = str(stat)
+        total_text = number_text + " " + suffix_text
+        
+        # Calculate total text size
+        total_size_large = cv2.getTextSize(number_text, font, font_scale_large, thickness)[0]
+        total_size_small = cv2.getTextSize(suffix_text, font, font_scale_small, thickness)[0]
+        total_width = total_size_large[0] + total_size_small[0] + 5  # 5 pixels spacing
+
+        text_x = int((box_width * i) + (box_width - total_width) / 2)
         center_y = int(image.shape[0] / 2)
         vertical_shift = int(image.shape[0] * vertical_adjustment_factor)
         text_y = center_y - vertical_shift  # Move text up by a fraction of the image height
-        cv2.putText(image, text, (text_x, text_y), font, font_scale, font_color, thickness)
+
+        # Calculate position for the suffix text
+        suffix_x = text_x + total_size_large[0] + 5  # Adjust x position to be after the number
+        suffix_y = text_y + total_size_large[1] - total_size_small[1]  # Adjust y position to be in line with the number
+
+        # Put the number and the suffix text on the image
+        cv2.putText(image, number_text, (text_x, text_y), font, font_scale_large, font_color, thickness)
+        if suffix_text:
+            cv2.putText(image, suffix_text, (suffix_x, suffix_y), font, font_scale_small, font_color, thickness)
 
     return image
 
