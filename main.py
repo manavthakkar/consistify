@@ -112,9 +112,9 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     print(binary_array)
 
     # Display the marked boxes
-    imgMarked = imgWarpColored.copy()
-    imgMarked = utils.draw_circles_on_image(imgMarked, binary_array)
-    cv2.imshow('Marked Image', imgMarked)
+    # imgMarked = imgWarpColored.copy()
+    # imgMarked = utils.draw_circles_on_image(imgMarked, binary_array)
+    # cv2.imshow('Marked Image', imgMarked)
 
     # Create a black image of same shape of imgWarpColored to display circles
     imgRawCircles = np.zeros_like(imgWarpColored)
@@ -179,6 +179,9 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
             countC = 0
     print(monthPixelVal)
 
+    # Determine the month with the highest value
+    month, month_name = utils.detect_month(monthPixelVal)
+    print("The month with the highest value is:", month, "i.e.", month_name)
     
     cv2.imshow('Final Image', imgFinal)
     

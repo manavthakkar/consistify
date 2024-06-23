@@ -220,6 +220,49 @@ def get_longest_streak(habit_array):
     streaks = np.array([calculate_streak(row) for row in habit_array])
     return streaks
 
+def detect_month(array):
+    """
+    This function takes a 2D numpy array where each row represents values for 
+    four consecutive months and returns the month number (1-based index) and 
+    the name of the month that has the highest value.
+
+    Parameters:
+    array (numpy.ndarray): A 2D numpy array where:
+                           - The first row represents values for January, February, March, and April.
+                           - The second row represents values for May, June, July, and August.
+                           - The third row represents values for September, October, November, and December.
+
+    Returns:
+    tuple: A tuple containing:
+           - int: The month number (1-based index) with the highest value.
+                  For example, 1 represents January, 2 represents February, and so on.
+           - str: The name of the month with the highest value.
+    
+    Example:
+    >>> data = np.array([[454., 425., 462., 397.],
+                         [395., 711., 180., 315.],
+                         [558., 372., 390., 439.]])
+    >>> month_with_highest_value(data)
+    (6, 'June')
+    """
+    # List of month names
+    month_names = [
+        'January', 'February', 'March', 'April',
+        'May', 'June', 'July', 'August',
+        'September', 'October', 'November', 'December'
+    ]
+    
+    # Flatten the array to get all values in a single list
+    flattened_array = array.flatten()
+    # Find the index of the maximum value
+    max_index = np.argmax(flattened_array)
+    # Convert the index to month (1-based index)
+    month = max_index + 1
+    # Get the name of the month
+    month_name = month_names[max_index]
+    
+    return month, month_name
+
 
 
 
