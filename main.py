@@ -72,13 +72,15 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     cv2.imshow('Warped Image Second', imgWarpColoredS)
 
     # Warp the third biggest rectangle
-    monthImgWidth = 355
-    monthImgHeight = 148
+    monthImgWidth = 356                         # must be divisible by 4 (columns)
+    monthImgHeight = 150                        # must be divisible by 3 (rows)
     ptT1 = np.float32(third_biggest_rectCon)
     ptT2 = np.float32([[0, 0], [monthImgWidth, 0], [0, monthImgHeight], [monthImgWidth, monthImgHeight]])
     matrixT = cv2.getPerspectiveTransform(ptT1, ptT2)
     imgWarpColoredT = cv2.warpPerspective(img, matrixT, (monthImgWidth, monthImgHeight))
     cv2.imshow('Warped Image Third', imgWarpColoredT)
+
+    ##################### Processing the checkbox area #####################
 
     # Convert the warped image of the biggest rect contour to grayscale and apply thresholding
     imgWarpGray = cv2.cvtColor(imgWarpColored, cv2.COLOR_BGR2GRAY)
@@ -86,8 +88,8 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     cv2.imshow('Thresh Image', imgThresh)
 
     # Get the boxes from the biggest rect contour warped image 
-    boxes = utils.splitBoxes(imgThresh, habits)
-    cv2.imshow('Boxes Image', boxes[2])   # Display the third box
+    boxes = utils.splitBoxes(imgThresh, habits, 31)     # 6 rows and 31 columns
+    #cv2.imshow('Boxes Image', boxes[2])   # Display the third box
     # print(len(boxes))                   # 186 boxes (6x31)
     # print(boxes[0].shape)               # (124, 24)         i.e. 124 x 6 = 744 and 24 x 31 = 744
 
@@ -133,6 +135,8 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     mask = np.any(imgInvWarp != 0, axis=-1)
     imgFinal[mask] = imgInvWarp[mask]
 
+    ##################### Processing the stats area #####################
+
     # Display the stats on a black image
     imgRawStats = np.zeros_like(imgWarpColoredS)
     total_days = utils.count_total_days(binary_array)
@@ -149,6 +153,32 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     # Overlay the stats image on the original image
     maskStats = np.any(imgInvWarpStats != 0, axis=-1)
     imgFinal[maskStats] = imgInvWarpStats[maskStats]
+
+    ##################### Processing the month area #####################
+
+    # Convert the warped image of the third biggest rect contour to grayscale and apply thresholding
+    imgWarpGrayT = cv2.cvtColor(imgWarpColoredT, cv2.COLOR_BGR2GRAY)
+    imgThreshT = cv2.threshold(imgWarpGrayT, 170, 255, cv2.THRESH_BINARY_INV)[1]
+
+    # Get the boxes from the third biggest rect contour warped image
+    month_boxes = utils.splitBoxes(imgThreshT, 3, 4)           # 3 rows and 4 columns
+    # cv2.imshow('Month Boxes Image', month_boxes[0])          # Display the first month box
+    # print(len(month_boxes))                                  # 12 boxes (3x4)
+    # print(month_boxes[0].shape)                              # (50, 89)         i.e. 50 x 3 = 150 and 89 x 4 = 356
+
+    # Get the non-zero pixel values of each box
+    monthPixelVal = np.zeros((3, 4))  # 3x4
+    countR = 0
+    countC = 0
+    for image in month_boxes:
+        totalPixels = cv2.countNonZero(image)
+        monthPixelVal[countR][countC] = totalPixels
+        countC += 1
+        if countC == 4:
+            countR += 1
+            countC = 0
+    print(monthPixelVal)
+
     
     cv2.imshow('Final Image', imgFinal)
     
