@@ -182,6 +182,20 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     # Determine the month with the highest value
     month, month_name = utils.detect_month(monthPixelVal)
     print("The month with the highest value is:", month, "i.e.", month_name)
+
+    # Display the month on a black image
+    imgRawMonth = np.zeros_like(imgWarpColoredT)
+    imgRawMonth = utils.draw_month_on_image(imgRawMonth, month)
+    cv2.imshow('Month Image', imgRawMonth)
+
+    # Inverse warp the month image
+    invMatrixT = cv2.getPerspectiveTransform(ptT2, ptT1)
+    imgInvWarpMonth = cv2.warpPerspective(imgRawMonth, invMatrixT, (img.shape[1], img.shape[0]))
+    cv2.imshow('Inverse Warped Month Image', imgInvWarpMonth)
+
+    # Overlay the month image on the original image
+    maskMonth = np.any(imgInvWarpMonth != 0, axis=-1)
+    imgFinal[maskMonth] = imgInvWarpMonth[maskMonth]
     
     cv2.imshow('Final Image', imgFinal)
     

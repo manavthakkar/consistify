@@ -263,6 +263,59 @@ def detect_month(array):
     
     return month, month_name
 
+def draw_month_on_image(image, month):
+    """
+    Annotates an image by drawing a circle in a grid cell corresponding to a specified month.
+
+    This function divides an image into a grid of 3 rows and 4 columns, where each cell in the grid
+    corresponds to a month of the year from January (top-left) to December (bottom-right). It then
+    draws a red circle in the cell that corresponds to the given month number.
+
+    Parameters:
+    - image (numpy.ndarray): The image to annotate, represented as a NumPy array. The image
+                             should be loaded using OpenCV and passed directly to the function.
+    - month (int): The month number (1 for January, 12 for December) for which the circle
+                   will be drawn. Must be in the range 1 to 12.
+
+    Returns:
+    - image (numpy.ndarray): The annotated image as a numpy array, which can be displayed or saved
+                             using OpenCV functions.
+
+    Raises:
+    - ValueError: If the month number is not within the valid range of 1 to 12.
+
+    """
+    if not (1 <= month <= 12):
+        raise ValueError("Month must be between 1 and 12.")
+
+    # Get image dimensions
+    height, width = image.shape[:2]
+    
+    # Calculate cell width and height
+    cell_width = width // 4
+    cell_height = height // 3
+    
+    # Calculate the grid position based on the month
+    row = (month - 1) // 4
+    column = (month - 1) % 4
+    
+    # Calculate the center of the cell
+    center_x = column * cell_width + cell_width // 2
+    center_y = row * cell_height + cell_height // 2
+    
+    # Radius of the circle
+    radius = min(cell_width, cell_height) // 5
+    
+    # Circle color (BGR format) and thickness
+    circle_color = (255, 0, 0)  # BGR
+    thickness = 5
+    
+    # Draw the circle
+    cv2.circle(image, (center_x, center_y), radius, circle_color, thickness)
+    
+    # Return the modified image
+    return image
+
 
 
 
