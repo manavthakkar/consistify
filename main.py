@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import utils
+import calendar
 
 ##################### Constants #####################
 imgWidth = 744                      # should be divisible by 31 (days)
@@ -60,7 +61,7 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     pt2 = np.float32([[0, 0], [markerImgWidth, 0], [0, markerImgHeight], [markerImgWidth, markerImgHeight]])
     matrix = cv2.getPerspectiveTransform(pt1, pt2)
     imgWarpColored = cv2.warpPerspective(img, matrix, (markerImgWidth, markerImgHeight))
-    cv2.imshow('Warped Image', imgWarpColored)
+    #cv2.imshow('Warped Image', imgWarpColored)
 
     # Warp the second biggest rectangle
     statImgWidth = 1200
@@ -69,7 +70,7 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     ptS2 = np.float32([[0, 0], [statImgWidth, 0], [0, statImgHeight], [statImgWidth, statImgHeight]])
     matrixS = cv2.getPerspectiveTransform(ptS1, ptS2)
     imgWarpColoredS = cv2.warpPerspective(img, matrixS, (statImgWidth, statImgHeight))
-    cv2.imshow('Warped Image Second', imgWarpColoredS)
+    #cv2.imshow('Warped Image Second', imgWarpColoredS)
 
     # Warp the third biggest rectangle
     monthImgWidth = 356                         # must be divisible by 4 (columns)
@@ -78,14 +79,14 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     ptT2 = np.float32([[0, 0], [monthImgWidth, 0], [0, monthImgHeight], [monthImgWidth, monthImgHeight]])
     matrixT = cv2.getPerspectiveTransform(ptT1, ptT2)
     imgWarpColoredT = cv2.warpPerspective(img, matrixT, (monthImgWidth, monthImgHeight))
-    cv2.imshow('Warped Image Third', imgWarpColoredT)
+    #cv2.imshow('Warped Image Third', imgWarpColoredT)
 
     ##################### Processing the checkbox area #####################
 
     # Convert the warped image of the biggest rect contour to grayscale and apply thresholding
     imgWarpGray = cv2.cvtColor(imgWarpColored, cv2.COLOR_BGR2GRAY)
     imgThresh = cv2.threshold(imgWarpGray, 170, 255, cv2.THRESH_BINARY_INV)[1]
-    cv2.imshow('Thresh Image', imgThresh)
+    #cv2.imshow('Thresh Image', imgThresh)
 
     # Get the boxes from the biggest rect contour warped image 
     boxes = utils.splitBoxes(imgThresh, habits, 31)     # 6 rows and 31 columns
@@ -119,12 +120,12 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     # Create a black image of same shape of imgWarpColored to display circles
     imgRawCircles = np.zeros_like(imgWarpColored)
     imgRawCircles = utils.draw_circles_on_image(imgRawCircles, binary_array)
-    cv2.imshow('Raw Circles Image', imgRawCircles)
+    #cv2.imshow('Raw Circles Image', imgRawCircles)
 
     # Inverse warp the raw circles image (This will be a black image with circles)
     invMatrix = cv2.getPerspectiveTransform(pt2, pt1)
     imgInvWarp = cv2.warpPerspective(imgRawCircles, invMatrix, (img.shape[1], img.shape[0])) # img.shape[1] = width, img.shape[0] = height
-    cv2.imshow('Inverse Warped Circle Image', imgInvWarp)
+    #cv2.imshow('Inverse Warped Circle Image', imgInvWarp)
 
     # Add the inverse warped image to the original image
     # imgFinal = cv2.addWeighted(img, 1, imgInvWarp, 1.5, 10)
@@ -134,25 +135,6 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     imgFinal = img.copy()
     mask = np.any(imgInvWarp != 0, axis=-1)
     imgFinal[mask] = imgInvWarp[mask]
-
-    ##################### Processing the stats area #####################
-
-    # Display the stats on a black image
-    imgRawStats = np.zeros_like(imgWarpColoredS)
-    total_days = utils.count_total_days(binary_array)
-    imgRawStats = utils.apply_stats_to_image(imgRawStats, total_days, "/31", 0.15) # 0.15 is the vertical adjustment factor
-    longest_streak = utils.get_longest_streak(binary_array)
-    imgStats = utils.apply_stats_to_image(imgRawStats, longest_streak, "day streak", -0.2) # -0.2 is the vertical adjustment factor
-    cv2.imshow('Stats Image', imgStats)
-
-    # Inverse warp the stats image
-    invMatrixS = cv2.getPerspectiveTransform(ptS2, ptS1)
-    imgInvWarpStats = cv2.warpPerspective(imgRawStats, invMatrixS, (img.shape[1], img.shape[0]))
-    cv2.imshow('Inverse Warped Stats Image', imgInvWarpStats)
-
-    # Overlay the stats image on the original image
-    maskStats = np.any(imgInvWarpStats != 0, axis=-1)
-    imgFinal[maskStats] = imgInvWarpStats[maskStats]
 
     ##################### Processing the month area #####################
 
@@ -186,23 +168,43 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     # Display the month on a black image
     imgRawMonth = np.zeros_like(imgWarpColoredT)
     imgRawMonth = utils.draw_month_on_image(imgRawMonth, month)
-    cv2.imshow('Month Image', imgRawMonth)
+    #cv2.imshow('Month Image', imgRawMonth)
 
     # Inverse warp the month image
     invMatrixT = cv2.getPerspectiveTransform(ptT2, ptT1)
     imgInvWarpMonth = cv2.warpPerspective(imgRawMonth, invMatrixT, (img.shape[1], img.shape[0]))
-    cv2.imshow('Inverse Warped Month Image', imgInvWarpMonth)
+    #cv2.imshow('Inverse Warped Month Image', imgInvWarpMonth)
 
     # Overlay the month image on the original image
     maskMonth = np.any(imgInvWarpMonth != 0, axis=-1)
     imgFinal[maskMonth] = imgInvWarpMonth[maskMonth]
+
+    ##################### Processing the stats area #####################
+
+    # Display the stats on a black image
+    imgRawStats = np.zeros_like(imgWarpColoredS)
+    total_days = utils.count_total_days(binary_array)
+    no_of_days = calendar.monthrange(2024, month)[1]
+    imgRawStats = utils.apply_stats_to_image(imgRawStats, total_days, f"/{no_of_days}", 0.15) # 0.15 is the vertical adjustment factor
+    longest_streak = utils.get_longest_streak(binary_array)
+    imgStats = utils.apply_stats_to_image(imgRawStats, longest_streak, "day streak", -0.2) # -0.2 is the vertical adjustment factor
+    #cv2.imshow('Stats Image', imgStats)
+
+    # Inverse warp the stats image
+    invMatrixS = cv2.getPerspectiveTransform(ptS2, ptS1)
+    imgInvWarpStats = cv2.warpPerspective(imgRawStats, invMatrixS, (img.shape[1], img.shape[0]))
+    #cv2.imshow('Inverse Warped Stats Image', imgInvWarpStats)
+
+    # Overlay the stats image on the original image
+    maskStats = np.any(imgInvWarpStats != 0, axis=-1)
+    imgFinal[maskStats] = imgInvWarpStats[maskStats]
     
     cv2.imshow('Final Image', imgFinal)
     
 
-# cv2.imshow('Original Image', img)
+cv2.imshow('Original Image', img)
 # cv2.imshow('Gray Image', imgGray)
 # cv2.imshow('Blur Image', imgBlur)
 # cv2.imshow('Canny Image', imgCanny)
-cv2.imshow('Contours Image', imgContours)
+# cv2.imshow('Contours Image', imgContours)
 cv2.waitKey(0)
