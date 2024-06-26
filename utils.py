@@ -316,6 +316,53 @@ def draw_month_on_image(image, month):
     # Return the modified image
     return image
 
+def calculate_streaks(habits_array, position='end'):
+    """
+    Calculate the longest streak of performed habits (represented by 1's) at the start or end of the month.
+    
+    This function takes a 2D numpy array where each row represents a habit and each column represents 
+    a day in the month. The value 1 indicates the habit was performed on that day, and 0 indicates 
+    it was not performed. The function returns a list of the longest streaks of consecutive 1's 
+    at the specified position (start or end) of each habit's array.
 
+    Parameters:
+    habits_array (numpy.ndarray): 2D array with shape (number_of_habits, number_of_days_in_month).
+    position (str): Specifies whether to calculate the streak at the 'start' or 'end' of the month. 
+                    Default is 'end'.
 
-
+    Returns:
+    list: A list of integers representing the longest streak of 1's at the specified position of each habit's array.
+    
+    Example:
+    >>> habits_array = np.array([
+    ...     [1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+    ...     [1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+    ...     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ...     [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+    ...     [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ...     [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1]
+    ... ])
+    >>> calculate_streaks(habits_array, position='start')
+    [1, 2, 1, 7, 3, 0]
+    >>> calculate_streaks(habits_array, position='end')
+    [3, 4, 0, 2, 0, 6]
+    """
+    streaks = []
+    for habit in habits_array:
+        streak = 0
+        if position == 'end':
+            for day in reversed(habit):
+                if day == 1:
+                    streak += 1
+                else:
+                    break
+        elif position == 'start':
+            for day in habit:
+                if day == 1:
+                    streak += 1
+                else:
+                    break
+        else:
+            raise ValueError("Position must be 'start' or 'end'")
+        streaks.append(streak)
+    return streaks
