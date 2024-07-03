@@ -8,6 +8,7 @@ imgWidth = 744                      # should be divisible by 31 (days)
 imgHeight = 744                     # should be divisible by 6 (habits)
 habits = 6
 threshold = 500                    # Threshold for checking if a box is marked or not
+year = 2024
 
 img_path = 'test.jpg'
 
@@ -55,8 +56,8 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     third_biggest_rectCon = utils.reorder(third_biggest_rectCon)
 
     # Warp the image
-    markerImgWidth = 1054
-    markerImgHeight = 276
+    markerImgWidth = 1054                # must be divisible by 31 (columns)  # values obtained from the template image
+    markerImgHeight = 276                # must be divisible by 6 (rows)
     pt1 = np.float32(biggest_rectCon)
     pt2 = np.float32([[0, 0], [markerImgWidth, 0], [0, markerImgHeight], [markerImgWidth, markerImgHeight]])
     matrix = cv2.getPerspectiveTransform(pt1, pt2)
@@ -64,7 +65,7 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     #cv2.imshow('Warped Image', imgWarpColored)
 
     # Warp the second biggest rectangle
-    statImgWidth = 1200
+    statImgWidth = 1200                 # must be divisible by 6 (columns)
     statImgHeight = 154
     ptS1 = np.float32(second_biggest_rectCon)
     ptS2 = np.float32([[0, 0], [statImgWidth, 0], [0, statImgHeight], [statImgWidth, statImgHeight]])
@@ -105,7 +106,7 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
         if countC == 31:
             countR += 1
             countC = 0
-    print(myPixelVal)
+    # print(myPixelVal)               # The pixel values of each box
     # print("The size of the pixel values array: ", myPixelVal.shape)         # (6,31)
 
     # Create a new array with 1 where the pixel value is greater than threshold, and 0 otherwise (Check if marked or not)
@@ -159,7 +160,7 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
         if countC == 4:
             countR += 1
             countC = 0
-    print(monthPixelVal)
+    #print(monthPixelVal)
 
     # Determine the month with the highest value
     month, month_name = utils.detect_month(monthPixelVal)
@@ -184,7 +185,7 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     # Display the stats on a black image
     imgRawStats = np.zeros_like(imgWarpColoredS)
     total_days = utils.count_total_days(binary_array)
-    no_of_days = calendar.monthrange(2024, month)[1]
+    no_of_days = calendar.monthrange(year, month)[1]
     imgRawStats = utils.apply_stats_to_image(imgRawStats, total_days, f"/{no_of_days}", 0.15) # 0.15 is the vertical adjustment factor
     longest_streak = utils.get_longest_streak(binary_array)
     imgStats = utils.apply_stats_to_image(imgRawStats, longest_streak, "day streak", -0.2) # -0.2 is the vertical adjustment factor
