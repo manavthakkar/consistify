@@ -199,6 +199,19 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     # Overlay the stats image on the original image
     maskStats = np.any(imgInvWarpStats != 0, axis=-1)
     imgFinal[maskStats] = imgInvWarpStats[maskStats]
+
+    ##################### Save the data to a csv file #####################
+    total_days = total_days.tolist()
+    longest_streak = longest_streak.tolist()
+    streak_start = utils.calculate_streaks(binary_array, "start")
+    streak_end = utils.calculate_streaks(binary_array, "end")
+ 
+    # Save the data to a csv file (data.csv)
+    result = utils.save_data(month, year, total_days, longest_streak, streak_start, streak_end, override=False)
+    if result:
+        print("Data saved successfully!")
+    else:
+        print("Data not saved. Data already exists.")
     
     cv2.imshow('Final Image', imgFinal)
     

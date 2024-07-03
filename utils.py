@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+import os
+import pandas as pd
 
 def stackImages(imgArray,scale,lables=[]):
     rows = len(imgArray)
@@ -366,3 +368,57 @@ def calculate_streaks(habits_array, position='end'):
             raise ValueError("Position must be 'start' or 'end'")
         streaks.append(streak)
     return streaks
+
+def save_data(month, year, total_days, longest_streak, streak_start, streak_end, override=False):
+    """
+    Saves or updates provided data in a DataFrame stored in a CSV file based on the given month and year.
+    Optionally overwrites existing entries if specified.
+
+    Parameters:
+        month (int): The month number (1-12).
+        year (int): The year as a four-digit number.
+        total_days (list of int): A list containing total days for six categories.
+        longest_streak (list of int): A list of the longest streaks for six categories.
+        streak_start (list of int): A list of start days for each streak across six categories.
+        streak_end (list of int): A list of end days for each streak across six categories.
+        override (bool): If True, existing data for the given month and year will be overwritten.
+
+    Returns:
+        bool: True if data is saved or updated successfully, False otherwise.
+
+    Example:
+        result = save_data(6, 2024, [8, 3, 0, 7, 1, 4], [4, 2, 0, 6, 1, 3], [1, 2, 3, 4, 5, 6], [6, 5, 4, 3, 2, 1], override=True)
+        if result:
+            print("Data saved or updated successfully!")
+        else:
+            print("Data not saved. An error occurred.")
+    """
+    file_path = 'data.csv'
+    try:
+        new_df = pd.DataFrame({
+            'month': [month], 'year': [year],
+            'ht1': [total_days[0]], 'ht2': [total_days[1]], 'ht3': [total_days[2]], 'ht4': [total_days[3]], 'ht5': [total_days[4]], 'ht6': [total_days[5]],
+            'hl1': [longest_streak[0]], 'hl2': [longest_streak[1]], 'hl3': [longest_streak[2]], 'hl4': [longest_streak[3]], 'hl5': [longest_streak[4]], 'hl6': [longest_streak[5]],
+            'hs1': [streak_start[0]], 'hs2': [streak_start[1]], 'hs3': [streak_start[2]], 'hs4': [streak_start[3]], 'hs5': [streak_start[4]], 'hs6': [streak_start[5]],
+            'he1': [streak_end[0]], 'he2': [streak_end[1]], 'he3': [streak_end[2]], 'he4': [streak_end[3]], 'he5': [streak_end[4]], 'he6': [streak_end[5]]
+        })
+
+        if os.path.exists(file_path):
+            existing_df = pd.read_csv(file_path)
+            if override:
+                # Overwrite existing data if month and year match
+                filtered_df = existing_df[(existing_df['month'] != month) | (existing_df['year'] != year)]
+                updated_df = pd.concat([filtered_df, new_df], ignore_index=True)
+            else:
+                # Check if the month and year already exist and do not save if they do
+                if ((existing_df['month'] == month) & (existing_df['year'] == year)).any():
+                    return False
+                updated_df = pd.concat([existing_df, new_df], ignore_index=True)
+        else:
+            updated_df = new_df
+
+        updated_df.to_csv(file_path, index=False)
+        return True
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return False
