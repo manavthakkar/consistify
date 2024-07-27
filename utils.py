@@ -422,3 +422,39 @@ def save_data(month, year, total_days, longest_streak, streak_start, streak_end,
     except Exception as e:
         print(f"An error occurred: {e}")
         return False
+    
+def mask_outside_rectangle(image, rectangle_coords, offset=0):
+    """
+    Mask outside of the given rectangle coordinates in the image with white pixels.
+
+    Parameters:
+    - image: Input image as a numpy array.
+    - rectangle_coords: A numpy array of shape (4, 1, 2) containing the coordinates of the rectangle.
+                       Coordinates should be in the order: top left, top right, bottom left, bottom right.
+    - offset: Offset to be added to the rectangle coordinates (positive offset shrinks the rectangle, negative expands it).
+
+    Returns:
+    - Modified image with white pixels outside the specified rectangle.
+    """
+    # Extract the top-left, top-right, bottom-left, and bottom-right coordinates
+    top_left = (rectangle_coords[0][0][0] + offset, rectangle_coords[0][0][1] + offset)
+    top_right = (rectangle_coords[1][0][0] - offset, rectangle_coords[1][0][1] + offset)
+    bottom_left = (rectangle_coords[2][0][0] + offset, rectangle_coords[2][0][1] - offset)
+    bottom_right = (rectangle_coords[3][0][0] - offset, rectangle_coords[3][0][1] - offset)
+    
+    # Create a mask with the same dimensions as the image, initially all black
+    mask = np.zeros_like(image, dtype=np.uint8)
+    
+    # Define the polygon with the provided coordinates
+    polygon_coords = np.array([top_left, top_right, bottom_right, bottom_left])
+    
+    # Create a white polygon in the mask where we want to keep the original image
+    cv2.fillPoly(mask, [polygon_coords], (255, 255, 255))
+    
+    # Create an image with all pixels set to white
+    white_image = np.ones_like(image, dtype=np.uint8) * 255
+    
+    # Use the mask to blend the original image and the white image
+    result = np.where(mask == 255, image, white_image)
+
+    return result
