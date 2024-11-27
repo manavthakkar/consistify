@@ -64,7 +64,7 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     #cv2.imshow('Warped Image', imgWarpColored)
 
     # Warp the second biggest rectangle
-    statImgWidth = 564                 # must be divisible by 6 (columns)
+    statImgWidth = 564 #654                 # must be divisible by 6 (columns) # originally 564 from figma
     statImgHeight = 92
     ptS1 = np.float32(second_biggest_rectCon)
     ptS2 = np.float32([[0, 0], [statImgWidth, 0], [0, statImgHeight], [statImgWidth, statImgHeight]])
@@ -151,7 +151,7 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     print(month_boxes[0].shape)                              # (26, 60)         i.e. 26 x 4 = 104 and 60 x 4 = 240
 
     # Get the non-zero pixel values of each box
-    monthPixelVal = np.zeros((4, 4))  # 3x4
+    monthPixelVal = np.zeros((4, 4))  # 4x4
     countR = 0
     countC = 0
     for image in month_boxes:
@@ -172,7 +172,7 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
 
     # Display the month on a black image
     imgRawMonth = np.zeros_like(imgWarpColoredT)
-    imgRawMonth = utils.draw_month_on_image(imgRawMonth, month)
+    imgRawMonth = utils.draw_month_on_image_with_top_row(imgRawMonth, month)
     #cv2.imshow('Month Image', imgRawMonth)
 
     # Inverse warp the month image
@@ -184,40 +184,30 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     maskMonth = np.any(imgInvWarpMonth != 0, axis=-1)
     imgFinal[maskMonth] = imgInvWarpMonth[maskMonth]
 
-#     ##################### Processing the stats area #####################
+    ##################### Processing the stats area #####################
 
-#     # Display the stats on a black image
-#     imgRawStats = np.zeros_like(imgWarpColoredS)
-#     total_days = utils.count_total_days(binary_array)
-#     no_of_days = calendar.monthrange(year, month)[1]
-#     imgRawStats = utils.apply_stats_to_image(imgRawStats, total_days, f"/{no_of_days}", 0.15) # 0.15 is the vertical adjustment factor
-#     longest_streak = utils.get_longest_streak(binary_array)
-#     imgStats = utils.apply_stats_to_image(imgRawStats, longest_streak, "day streak", -0.2) # -0.2 is the vertical adjustment factor
-#     #cv2.imshow('Stats Image', imgStats)
+    # Display the stats on a black image
+    imgRawStats = np.zeros_like(imgWarpColoredS)
+    total_days = utils.count_total_days(binary_array)
+    no_of_days = calendar.monthrange(year, month)[1]
+    print("Total days in the month:", no_of_days)
+    imgRawStats = utils.apply_stats_to_image(imgRawStats, total_days, f"/{no_of_days}", 0.15) # 0.15 is the vertical adjustment factor
+    longest_streak = utils.get_longest_streak(binary_array)
+    print("Longest streak of consecutive days:", longest_streak)
+    imgStats = utils.apply_stats_to_image(imgRawStats, longest_streak, "day streak", -0.2) # -0.2 is the vertical adjustment factor
+    cv2.imshow('Stats Image', imgStats)
 
-#     # Inverse warp the stats image
-#     invMatrixS = cv2.getPerspectiveTransform(ptS2, ptS1)
-#     imgInvWarpStats = cv2.warpPerspective(imgRawStats, invMatrixS, (img.shape[1], img.shape[0]))
-#     #cv2.imshow('Inverse Warped Stats Image', imgInvWarpStats)
+    # Inverse warp the stats image
+    invMatrixS = cv2.getPerspectiveTransform(ptS2, ptS1)
+    imgInvWarpStats = cv2.warpPerspective(imgRawStats, invMatrixS, (img.shape[1], img.shape[0]))
+    cv2.imshow('Inverse Warped Stats Image', imgInvWarpStats)
 
-#     # Overlay the stats image on the original image
-#     maskStats = np.any(imgInvWarpStats != 0, axis=-1)
-#     imgFinal[maskStats] = imgInvWarpStats[maskStats]
+    # Overlay the stats image on the original image
+    maskStats = np.any(imgInvWarpStats != 0, axis=-1)
+    imgFinal[maskStats] = imgInvWarpStats[maskStats]
 
-#     ##################### Save the data to a csv file #####################
-#     total_days = total_days.tolist()
-#     longest_streak = longest_streak.tolist()
-#     streak_start = utils.calculate_streaks(binary_array, "start")
-#     streak_end = utils.calculate_streaks(binary_array, "end")
- 
-#     # Save the data to a csv file (data.csv)
-#     result = utils.save_data(month, year, total_days, longest_streak, streak_start, streak_end, override=False)
-#     if result:
-#         print("Data saved successfully!")
-#     else:
-#         print("Data not saved. Data already exists.")
-    
-#     cv2.imshow('Final Image', imgFinal)
+    # Create a collage of the original image and the final image
+    collage = utils.create_collage(img, imgFinal, scale=0.8)
     
 
 cv2.imshow('Original Image', img)
@@ -226,4 +216,5 @@ cv2.imshow('Original Image', img)
 # cv2.imshow('Canny Image', imgCanny)
 cv2.imshow('Contours Image', imgContours)
 cv2.imshow('Final Image', imgFinal)
+cv2.imshow('Collage', collage)
 cv2.waitKey(0)
