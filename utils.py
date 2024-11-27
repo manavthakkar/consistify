@@ -161,10 +161,10 @@ def apply_stats_to_image(image, stats, suffix_text="", vertical_adjustment_facto
 
     # Define font, size, and color for the text
     font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale_large = 1
-    font_scale_small = 0.5
+    font_scale_large = 0.6
+    font_scale_small = 0.4
     font_color = (255, 0, 0)  
-    thickness = 2
+    thickness = 1
 
     # Place each stat dynamically adjusted above the center of each box
     for i, stat in enumerate(stats):
@@ -193,8 +193,8 @@ def apply_stats_to_image(image, stats, suffix_text="", vertical_adjustment_facto
     return image
 
 def count_total_days(habit_array):
-    # Sum each row to get the number of days each habit was performed
-    days_performed = np.sum(habit_array, axis=1)
+    # Sum each column to get the number of days each habit was performed
+    days_performed = np.sum(habit_array, axis=0)
     return days_performed
 
 def get_longest_streak(habit_array):
@@ -202,16 +202,16 @@ def get_longest_streak(habit_array):
     Calculate the longest streak of consecutive days each habit was performed.
 
     Parameters:
-    habit_array (numpy.ndarray): A 2D numpy array where each row represents a habit and each column represents a day of the month. 
+    habit_array (numpy.ndarray): A 2D numpy array where each column represents a habit and each row represents a day of the month. 
                                  Elements are 1 if the habit was performed on that day and 0 otherwise.
 
     Returns:
     numpy.ndarray: An array where each element represents the longest streak of consecutive days the corresponding habit was performed.
     """
-    def calculate_streak(row):
+    def calculate_streak(array_column):
         max_streak = 0
         current_streak = 0
-        for day in row:
+        for day in array_column:
             if day == 1:
                 current_streak += 1
                 max_streak = max(max_streak, current_streak)
@@ -219,7 +219,8 @@ def get_longest_streak(habit_array):
                 current_streak = 0
         return max_streak
 
-    streaks = np.array([calculate_streak(row) for row in habit_array])
+    # Process each column in the array 
+    streaks = np.array([calculate_streak(habit_array[:, col]) for col in range(habit_array.shape[1])])
     return streaks
 
 def detect_month(array):
@@ -265,7 +266,7 @@ def detect_month(array):
     
     return month, month_name
 
-def draw_month_on_image(image, month):
+def draw_month_on_image(image, month): # deprecated, but might be useful for reference
     """
     Annotates an image by drawing a circle in a grid cell corresponding to a specified month.
 
@@ -309,7 +310,7 @@ def draw_month_on_image(image, month):
     radius = min(cell_width, cell_height) // 5
     
     # Circle color (BGR format) and thickness
-    circle_color = (255, 0, 0)  # BGR
+    circle_color = (33, 33, 33)  # BGR
     thickness = 5
     
     # Draw the circle
@@ -317,6 +318,64 @@ def draw_month_on_image(image, month):
     
     # Return the modified image
     return image
+
+def draw_month_on_image_with_top_row(image, month):
+    """
+    Annotates an image by drawing a circle in a grid cell corresponding to a specified month, 
+    while ignoring the extra top row.
+
+    This function divides an image into a grid of 4 rows and 4 columns, where the first row is ignored 
+    (e.g., header or labels). Each cell in the remaining 3 rows corresponds to a month of the year 
+    from January (second row, first column) to December (last row, fourth column).
+
+    Parameters:
+    - image (numpy.ndarray): The image to annotate, represented as a NumPy array. The image
+                             should be loaded using OpenCV and passed directly to the function.
+    - month (int): The month number (1 for January, 12 for December) for which the circle
+                   will be drawn. Must be in the range 1 to 12.
+
+    Returns:
+    - image (numpy.ndarray): The annotated image as a numpy array, which can be displayed or saved
+                             using OpenCV functions.
+
+    Raises:
+    - ValueError: If the month number is not within the valid range of 1 to 12.
+
+    """
+    if not (1 <= month <= 12):
+        raise ValueError("Month must be between 1 and 12.")
+
+    # Get image dimensions
+    height, width = image.shape[:2]
+    
+    # Calculate the height of the top row
+    top_row_height = height // 4  # Since there are 4 total rows including the header
+    
+    # Calculate the height of each remaining cell (excluding the top row)
+    cell_height = (height - top_row_height) // 3
+    cell_width = width // 4
+    
+    # Adjust the grid for months (ignoring the top row)
+    row = (month - 1) // 4  # 0-based row for the month
+    column = (month - 1) % 4  # 0-based column for the month
+    
+    # Calculate the center of the cell
+    center_x = column * cell_width + cell_width // 2
+    center_y = top_row_height + row * cell_height + cell_height // 2
+    
+    # Radius of the circle
+    radius = min(cell_width, cell_height) // 5
+    
+    # Circle color (BGR format) and thickness
+    circle_color = (33, 33, 33)  # Blue color in BGR
+    thickness = 5
+    
+    # Draw the circle
+    cv2.circle(image, (center_x, center_y), radius, circle_color, thickness)
+    
+    # Return the modified image
+    return image
+
 
 def calculate_streaks(habits_array, position='end'):
     """
@@ -458,3 +517,31 @@ def mask_outside_rectangle(image, rectangle_coords, offset=0):
     result = np.where(mask == 255, image, white_image)
 
     return result
+
+def create_collage(image1, image2, scale=0.6):
+    """
+    Creates a side-by-side collage of two images of the same dimensions and scales the final image.
+
+    Parameters:
+    image1 (numpy.ndarray): The first input image (BGR format).
+    image2 (numpy.ndarray): The second input image (BGR format).
+    scale (float): Scaling factor for the final collage.
+
+    Returns:
+    numpy.ndarray: The scaled collage image.
+    """
+    # Check if images have the same dimensions
+    if image1.shape != image2.shape:
+        raise ValueError("Both images must have the same dimensions.")
+    
+    # Concatenate the images side by side
+    collage = cv2.hconcat([image1, image2])
+    
+    # Scale the final collage
+    if scale != 1.0:
+        # Calculate the new dimensions
+        new_width = int(collage.shape[1] * scale)
+        new_height = int(collage.shape[0] * scale)
+        collage = cv2.resize(collage, (new_width, new_height), interpolation=cv2.INTER_AREA)
+    
+    return collage
