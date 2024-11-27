@@ -161,8 +161,8 @@ def apply_stats_to_image(image, stats, suffix_text="", vertical_adjustment_facto
 
     # Define font, size, and color for the text
     font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale_large = 0.6
-    font_scale_small = 0.4
+    font_scale_large = 0.55
+    font_scale_small = 0.35
     font_color = (255, 0, 0)  
     thickness = 1
 
