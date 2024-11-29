@@ -9,6 +9,14 @@ year = 2024
 
 img_path = 'assets/testimg2.jpeg'
 
+
+# Configurable grid dimensions
+CHECKBOX_ROWS = 31
+CHECKBOX_COLS = 6
+
+MONTH_ROWS = 4
+MONTH_COLS = 4
+
 # Load the image
 img = cv2.imread(img_path)
 
@@ -59,8 +67,8 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     third_biggest_rectCon = utils.reorder(third_biggest_rectCon)
 
     # Warp the image
-    markerImgWidth = 534                 # must be divisible by 6 (columns)  # values obtained from figma
-    markerImgHeight = 558                # must be divisible by 31 (rows)
+    markerImgWidth = CHECKBOX_COLS * 89    #534   #adjust cell width    # must be divisible by 6 (columns)  # values obtained from figma
+    markerImgHeight = CHECKBOX_ROWS * 18   #558  #adjust cell width    # must be divisible by 31 (rows)
     pt1 = np.float32(biggest_rectCon)
     pt2 = np.float32([[0, 0], [markerImgWidth, 0], [0, markerImgHeight], [markerImgWidth, markerImgHeight]])
     matrix = cv2.getPerspectiveTransform(pt1, pt2)
@@ -77,8 +85,8 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     #cv2.imshow('Warped Image Second', imgWarpColoredS)
 
     # Warp the third biggest rectangle
-    monthImgWidth = 240                         # must be divisible by 4 (columns)
-    monthImgHeight = 104                        # must be divisible by 4 (rows)
+    monthImgWidth = MONTH_COLS * 60 #240                         # must be divisible by 4 (columns)
+    monthImgHeight = MONTH_ROWS * 26 #104                        # must be divisible by 4 (rows)
     ptT1 = np.float32(third_biggest_rectCon)
     ptT2 = np.float32([[0, 0], [monthImgWidth, 0], [0, monthImgHeight], [monthImgWidth, monthImgHeight]])
     matrixT = cv2.getPerspectiveTransform(ptT1, ptT2)
@@ -95,13 +103,13 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     #cv2.imshow('Thresh Image', imgThresh)
 
     # Get the boxes from the biggest rect contour warped image 
-    boxes = utils.splitBoxes(imgThresh, 31, 6)     # 31 rows and 6 columns
+    boxes = utils.splitBoxes(imgThresh, CHECKBOX_ROWS, CHECKBOX_COLS)     # 31 rows and 6 columns
     #cv2.imshow('Boxes Image', boxes[2])   # Display the third box
     #print("Total boxes:" , len(boxes))                   # 186 boxes (31x6)
     #print("Size of each box: ", boxes[0].shape)               # (18, 89)         i.e. 18 x 31 = 558 and 89 x 6 = 534
 
     # Get the non-zero pixel values of each box
-    myPixelVal = np.zeros((31, 6))  # 31x6
+    myPixelVal = np.zeros((CHECKBOX_ROWS, CHECKBOX_COLS))  # 31x6
     countR = 0
     countC = 0
     #for image in boxes:
@@ -111,7 +119,7 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     #    if countC == 6:
     #        countR += 1
     #        countC = 0
-    myPixelVal = np.array([cv2.countNonZero(image) for image in boxes]).reshape(31, 6)  # One-liner (same as above, but faster)
+    myPixelVal = np.array([cv2.countNonZero(image) for image in boxes]).reshape(CHECKBOX_ROWS, CHECKBOX_COLS)  # One-liner (same as above, but faster)
     print(myPixelVal)               # The pixel values of each box (no. of non-zero pixels i.e. white pixels)
     #print("The size of the pixel values array: ", myPixelVal.shape)         # (31,6)
 
@@ -154,7 +162,7 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
 
 
     # Get the boxes from the third biggest rect contour warped image
-    month_boxes = utils.splitBoxes(imgThreshT, 4, 4)           # 4 rows and 4 columns
+    month_boxes = utils.splitBoxes(imgThreshT, MONTH_ROWS, MONTH_COLS)           # 4 rows and 4 columns
     #cv2.imshow('Month Boxes Image', month_boxes[4])          # Display 5th box - Jan box
     # print(len(month_boxes))                                  # 12 boxes (4x4)
     print(month_boxes[0].shape)                              # (26, 60)         i.e. 26 x 4 = 104 and 60 x 4 = 240
