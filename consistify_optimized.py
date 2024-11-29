@@ -104,19 +104,20 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     myPixelVal = np.zeros((31, 6))  # 31x6
     countR = 0
     countC = 0
-    for image in boxes:
-        totalPixels = cv2.countNonZero(image)
-        myPixelVal[countR][countC] = totalPixels
-        countC += 1
-        if countC == 6:
-            countR += 1
-            countC = 0
+    #for image in boxes:
+    #    totalPixels = cv2.countNonZero(image)
+    #    myPixelVal[countR][countC] = totalPixels
+    #    countC += 1
+    #    if countC == 6:
+    #        countR += 1
+    #        countC = 0
+    myPixelVal = np.array([cv2.countNonZero(image) for image in boxes]).reshape(31, 6)  # One-liner (same as above, but faster)
     print(myPixelVal)               # The pixel values of each box (no. of non-zero pixels i.e. white pixels)
     #print("The size of the pixel values array: ", myPixelVal.shape)         # (31,6)
 
     # Create a new array with 1 where the pixel value is greater than threshold, and 0 otherwise (Check if marked or not)
-    binary_array = np.where(myPixelVal > threshold, 1, 0)
-    binary_array = binary_array
+    #binary_array = np.where(myPixelVal > threshold, 1, 0)
+    binary_array = (myPixelVal > threshold).astype(int)  # same as above, but faster
     print(binary_array)                 # shape: (31, 6)
 
     # Display the marked boxes
