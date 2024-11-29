@@ -4,9 +4,9 @@ import utils
 import calendar
 
 ##################### Constants #####################
-THRESHOLD = 900    # Threshold for checking if a box is marked or not
 YEAR = 2024
-IMG_PATH = 'assets/testimg4.jpeg'
+IMG_PATH = 'assets/testimg2.jpeg'
+THRESHOLD_ADJUSTMENT = 0          # ± value to adjust the threshold
 
 # Configurable grid dimensions
 CHECKBOX_ROWS = 31
@@ -75,7 +75,8 @@ imgWarpColoredT, matrixT = warp_image(img, third_biggest_rectCon, monthImgWidth,
 imgThresh = threshold_image(cv2.cvtColor(imgWarpColored, cv2.COLOR_BGR2GRAY))
 boxes = utils.splitBoxes(imgThresh, CHECKBOX_ROWS, CHECKBOX_COLS)
 myPixelVal = np.array([cv2.countNonZero(box) for box in boxes]).reshape(CHECKBOX_ROWS, CHECKBOX_COLS)
-binary_array = (myPixelVal > THRESHOLD).astype(int)
+threshold = np.max(myPixelVal) * 0.5 + THRESHOLD_ADJUSTMENT
+binary_array = (myPixelVal > threshold).astype(int)
 
 # Mark detected checkboxes
 imgMarked = utils.draw_circles_on_image(imgWarpColored.copy(), binary_array)
