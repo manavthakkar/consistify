@@ -149,7 +149,9 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
 
     # Convert the warped image of the third biggest rect contour to grayscale and apply thresholding
     imgWarpGrayT = cv2.cvtColor(imgWarpColoredT, cv2.COLOR_BGR2GRAY)
-    imgThreshT = cv2.threshold(imgWarpGrayT, 170, 255, cv2.THRESH_BINARY_INV)[1]
+    #imgThreshT = cv2.threshold(imgWarpGrayT, 170, 255, cv2.THRESH_BINARY_INV)[1]
+    _, imgThreshT = cv2.threshold(imgWarpGrayT, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU) # Otsu's thresholding
+
 
     # Get the boxes from the third biggest rect contour warped image
     month_boxes = utils.splitBoxes(imgThreshT, 4, 4)           # 4 rows and 4 columns
