@@ -1,8 +1,7 @@
-# Add custom font to the image (provide proper path to the image and font)
- 
 from PIL import Image, ImageDraw, ImageFont
 import cv2
 import numpy as np
+import calendar
 
 def add_text_to_image(image, text, font_path, size, position, color):
     # Convert the image from OpenCV (BGR) to PIL (RGB) format
@@ -62,13 +61,46 @@ def draw_circles_on_image(image, circle_array):
     # Return the image with the circles drawn
     return image
 
+def fill_month_template(month, year, habit_name, days, habit_streak, total_days, success_rate, circle_array):
+    # Create the heading for the month
+    heading = f"{calendar.month_name[month].upper()} '{str(year)[-2:]}"
+
+    # Change the heading to title case i.e. "OCTOBER ' 24" to "October ' 24"
+    formatted_heading = heading.split("'")[0].strip().capitalize() + " ' " + heading.split("'")[1].strip()
+
+    # Get no. of days in the month
+    days_in_month = calendar.monthrange(year, month)[1]
+
+    # Load the month template image
+    month_images = {
+    28: 'assets/28-month.png',
+    29: 'assets/29-month.png',
+    30: 'assets/30-month.png',
+    31: 'assets/31-month.png'}
+
+    image = cv2.imread(month_images.get(days_in_month, 'assets/31-month.png'))
+
+
+    # Add text to the image
+    image = add_text_to_image(image, heading, 'assets/Rubik-SemiBold.ttf', 48, (29, 16), (255, 255, 255))
+    image = add_text_to_image(image, habit_name, 'assets/Rubik-Regular.ttf', 32, (29, 82), (148, 168, 254))
+    image = add_text_to_image(image, str(days), 'assets/Rubik-SemiBold.ttf', 36, (106, 590), (148, 168, 254))
+    image = add_text_to_image(image, formatted_heading, 'assets/Rubik-Medium.ttf', 24, (208, 686), (77, 87, 200))
+    image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-Bold.ttf', 24, (430, 686), (77, 87, 200))
+    image = add_text_to_image(image, str(total_days), 'assets/Rubik-Bold.ttf', 24, (430, 776), (77, 87, 200))
+    image = add_text_to_image(image, str(success_rate) + " %", 'assets/Rubik-Bold.ttf', 36, (416, 515), (154, 162, 253))
+
+    # Draw circular progress bar on the image
+    image = draw_circular_progress_bar_on_image(image, success_rate, (455, 535))
+
+    # Draw circles on the image
+    image = draw_circles_on_image(image, circle_array)
+
+    return image
+
+
 # Example usage
-image = cv2.imread('31-month.png')  # provide the path to the image
-text = "OCTOBER' 24"
-font_path = 'Rubik-SemiBold.ttf'
-size = 48
-position =  (29, 16)  # X and Y coordinates
-color = (255, 255, 255)  # White color
+image = cv2.imread('assets/31-month.png')  # path to the image
 
 # Array representing where circles should be drawn
 circle_array = [
@@ -76,30 +108,22 @@ circle_array = [
     1, 1, 1, 1, 1, 1, 0,
     1, 0, 1, 1, 1, 1, 1,
     1, 1, 0, 1, 1, 1, 1,
-    1, 0, 1
+    0, 0, 0
 ]
 
-# Add text to image
-image_with_text = add_text_to_image(image, text, font_path, size, position, color)
-
-image_with_text = add_text_to_image(image_with_text, "Exercise", 'Rubik-Regular.ttf', 32, (29, 82), (148, 168, 254))
-
-image_with_text = add_text_to_image(image_with_text, "26", font_path, 36, (106, 590), (148, 168, 254))
-
-image_with_text = add_text_to_image(image_with_text, "October ' 24", 'Rubik-Medium.ttf', 24, (208, 686), (77, 87, 200))
-
-image_with_text = add_text_to_image(image_with_text, "7", 'Rubik-Bold.ttf', 24, (430, 686), (77, 87, 200))
-
-image_with_text = add_text_to_image(image_with_text, "46", 'Rubik-Bold.ttf', 24, (430, 776), (77, 87, 200))
-
-image_with_text = add_text_to_image(image_with_text, "87 %", 'Rubik-Bold.ttf', 36, (416, 515), (154, 162, 253))
-
-image_with_text = draw_circular_progress_bar_on_image(image_with_text, 87, (455, 535))
-
-# Draw circles on the image
-image_with_text = draw_circles_on_image(image_with_text, circle_array)
+# Fill the month template with the required details
+filled_image = fill_month_template(
+    4,                      # Month 
+    2024,                   # Year
+    "Exercise",              # Habit name
+    26,                     # No of days habit performed
+    7,                      # Habit streak
+    46,                     # Total days
+    60,                     # Success rate
+    circle_array 
+)
 
 # Display the image using OpenCV
-cv2.imshow('October 2024', image_with_text)
+cv2.imshow('final image', filled_image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
