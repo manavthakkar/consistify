@@ -61,7 +61,29 @@ def draw_circles_on_image(image, circle_array):
     # Return the image with the circles drawn
     return image
 
-def fill_month_template(month, year, habit_name, days, habit_streak, total_days, success_rate, circle_array):
+def longest_streak(arr):
+    """
+    Finds the longest streak of consecutive 1's in a binary array.
+
+    Args:
+    arr (list): A binary list containing only 0s and 1s.
+
+    Returns:
+    int: The length of the longest streak of 1's.
+    """
+    max_streak = 0
+    current_streak = 0
+
+    for num in arr:
+        if num == 1:
+            current_streak += 1
+            max_streak = max(max_streak, current_streak)
+        else:
+            current_streak = 0
+
+    return max_streak
+
+def fill_month_template(month, year, habit_name, total_days, habit_array):
     # Create the heading for the month
     heading = f"{calendar.month_name[month].upper()} '{str(year)[-2:]}"
 
@@ -80,11 +102,21 @@ def fill_month_template(month, year, habit_name, days, habit_streak, total_days,
 
     image = cv2.imread(month_images.get(days_in_month, 'assets/31-month.png'))
 
+    # Limit the circle array to the number of days in the month
+    habit_array = habit_array[:days_in_month]
+
+    # Calculate the number of days the habit was performed
+    days_habit_performed = sum(habit_array)
+
+    # Calculate the longest streak of the habit in the month
+    habit_streak = longest_streak(habit_array)
+
+    success_rate = int(days_habit_performed / days_in_month * 100)
 
     # Add text to the image
     image = add_text_to_image(image, heading, 'assets/Rubik-SemiBold.ttf', 48, (29, 16), (255, 255, 255))
     image = add_text_to_image(image, habit_name, 'assets/Rubik-Regular.ttf', 32, (29, 82), (148, 168, 254))
-    image = add_text_to_image(image, str(days), 'assets/Rubik-SemiBold.ttf', 36, (106, 590), (148, 168, 254))
+    image = add_text_to_image(image, str(days_habit_performed), 'assets/Rubik-SemiBold.ttf', 36, (106, 590), (148, 168, 254))
     image = add_text_to_image(image, formatted_heading, 'assets/Rubik-Medium.ttf', 24, (208, 686), (77, 87, 200))
     image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-Bold.ttf', 24, (430, 686), (77, 87, 200))
     image = add_text_to_image(image, str(total_days), 'assets/Rubik-Bold.ttf', 24, (430, 776), (77, 87, 200))
@@ -93,11 +125,8 @@ def fill_month_template(month, year, habit_name, days, habit_streak, total_days,
     # Draw circular progress bar on the image
     image = draw_circular_progress_bar_on_image(image, success_rate, (455, 535))
 
-    # Limit the circle array to the number of days in the month
-    circle_array = circle_array[:days_in_month]
-
     # Draw circles on the image
-    image = draw_circles_on_image(image, circle_array)
+    image = draw_circles_on_image(image, habit_array)
 
     return image
 
@@ -114,19 +143,15 @@ circle_array = [
     1, 0, 1
 ]
 
-# Fill the month template with the required details
-filled_image = fill_month_template(
-    2,                      # Month 
-    2024,                   # Year
-    "Exercise",              # Habit name
-    26,                     # No of days habit performed
-    7,                      # Habit streak
-    46,                     # Total days
-    60,                     # Success rate
-    circle_array 
-)
+month = 2
+year = 2024
+habit_name = "Exercise"
+total_days = 46
+
+# Fill the month template
+filled_image = fill_month_template(month, year, habit_name, total_days, circle_array)
 
 # Display the image using OpenCV
-cv2.imshow('final image', filled_image)
+cv2.imshow(f'{month} / {year}', filled_image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
