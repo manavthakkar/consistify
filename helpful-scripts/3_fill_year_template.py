@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from PIL import ImageFont, ImageDraw, Image
+import calendar
 
 def draw_bar_chart_on_image(image, percentage_array, display_array, font_path):
     # Define given parameters for the bar chart
@@ -134,40 +135,51 @@ def add_centered_custom_text(image, text, font_path, font_size, position_y, text
 
     return image_with_text
 
-# Load the image
-input_image = cv2.imread('365-year.png')
+def fill_year_template(year, habit_name, percentage_array, display_array, total_days, success_rate, habit_streak):
 
-# Array representing the height percentage for each month
-percentage_array = [74, 45, 80, 84, 80, 87, 74, 77, 87, 97, 80, 90]
+    no_of_days = 366 if calendar.isleap(year) else 365
 
-# Array representing the numbers to be displayed on each bar
-display_array =    [23, 14, 25, 26, 25, 27, 23, 24, 27, 30, 25, 28]
+    # Load the month template image
+    year_images = {
+    365: 'assets/365-year.png',
+    366: 'assets/366-year.png'}
 
-# Path to the custom font
-font_path = 'Rubik-Regular.ttf'
+    image = cv2.imread(year_images.get(no_of_days, 'assets/365-year.png'))
 
-# Draw the bar chart on the image with numbers on each bar using the custom font
-output_image = draw_bar_chart_on_image(input_image, percentage_array, display_array, font_path)
+    # Draw the bar chart on the image with numbers on each bar using the custom font
+    image = draw_bar_chart_on_image(image, percentage_array, display_array, 'assets/Rubik-Regular.ttf')
+
+    # Display circular progress bar
+    image = draw_circular_progress_bar_on_image(image, success_rate, (474, 690), 65, 19)
+
+    image = add_text_to_image(image, f'{success_rate}%', 'assets/Rubik-Bold.ttf', 36, (439, 670), (154, 162, 253))
+
+    # Display the year on the image
+    image = add_text_to_image(image, str(year), 'assets/Rubik-SemiBold.ttf', 48, (32, 12), (255, 255, 255))
+
+    # Disply total days
+    image = add_text_to_image(image, str(total_days), 'assets/Rubik-SemiBold.ttf', 36, (99, 618), (77, 87, 200))
+
+    # Display streak
+    image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-SemiBold.ttf', 36, (110, 722), (77, 87, 200))
+
+    # Display the habit name
+    image = add_centered_custom_text(image, habit_name, 'assets/Rubik-Regular.ttf', 24, 130, (231, 216, 200))
+
+    return image
 
 
-# Display circular progress bar
-output_image = draw_circular_progress_bar_on_image(output_image, 81, (474, 690), 65, 19)
+percentage_array = [74, 45, 80, 84, 80, 87, 74, 77, 87, 97, 80, 90] # Array representing the height percentage for each month
+display_array =    [23, 14, 25, 26, 25, 27, 23, 24, 27, 30, 25, 28] # Array representing the numbers to be displayed on each bar
+success_rate = 81                                                   # Success rate for the habit  (in percentage)
+habit_streak = 52                                                   # Current habit streak
+total_days = 297                                                    # Total days habit performed in the year
+year = 2022                                                         # Year
+habit_name = 'Exercise'                                             # Name of the habit
 
-output_image = add_text_to_image(output_image, '81%', 'Rubik-Bold.ttf', 36, (439, 670), (154, 162, 253))
-
-# Display the year on the image
-output_image = add_text_to_image(output_image, '2024', 'Rubik-SemiBold.ttf', 48, (32, 12), (255, 255, 255))
-
-# Disply total days
-output_image = add_text_to_image(output_image, '297', 'Rubik-SemiBold.ttf', 36, (99, 618), (77, 87, 200))
-
-# Display streak
-output_image = add_text_to_image(output_image, '52', 'Rubik-SemiBold.ttf', 36, (110, 722), (77, 87, 200))
-
-# Display the habit name
-output_image = add_centered_custom_text(output_image, 'Exercise', 'Rubik-Regular.ttf', 24, 130, (231, 216, 200))
+output_image = fill_year_template(year, habit_name, percentage_array, display_array, total_days, success_rate, habit_streak)
 
 # Display the image with the bar chart and numbers
-cv2.imshow('2024', output_image)
+cv2.imshow(f'{year}', output_image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
