@@ -93,6 +93,9 @@ def fill_month_template(month, year, habit_name, days, habit_streak, total_days,
     # Draw circular progress bar on the image
     image = draw_circular_progress_bar_on_image(image, success_rate, (455, 535))
 
+    # Limit the circle array to the number of days in the month
+    circle_array = circle_array[:days_in_month]
+
     # Draw circles on the image
     image = draw_circles_on_image(image, circle_array)
 
@@ -108,12 +111,12 @@ circle_array = [
     1, 1, 1, 1, 1, 1, 0,
     1, 0, 1, 1, 1, 1, 1,
     1, 1, 0, 1, 1, 1, 1,
-    0, 0, 0
+    1, 0, 1
 ]
 
 # Fill the month template with the required details
 filled_image = fill_month_template(
-    4,                      # Month 
+    2,                      # Month 
     2024,                   # Year
     "Exercise",              # Habit name
     26,                     # No of days habit performed
