@@ -14,6 +14,17 @@ CHECKBOX_COLS = 6
 MONTH_ROWS = 4
 MONTH_COLS = 4
 
+# Biggest rectangle dimensions
+GRID_RECT_WIDTH = 534
+GRID_RECT_HEIGHT = 558
+
+BOX_WIDTH = GRID_RECT_WIDTH // CHECKBOX_COLS
+BOX_HEIGHT = GRID_RECT_HEIGHT // CHECKBOX_ROWS
+
+# Stats rectangle dimensions
+STAT_RECT_WIDTH = 564
+STAT_RECT_HEIGHT = 92
+
 ##################### Helper Functions #####################
 def resize_image(img, scale_percent):
     """Resize image by a scale percentage."""
@@ -34,7 +45,7 @@ def threshold_image(img_gray):
 
 ##################### Main Code #####################
 # Load and preprocess the image
-img = resize_image(cv2.imread(IMG_PATH), scale_percent=30)
+img = resize_image(cv2.imread(IMG_PATH), scale_percent=100)
 imgContours = img.copy()
 imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 imgBlur = cv2.GaussianBlur(imgGray, (5, 5), 1)
@@ -61,11 +72,10 @@ second_biggest_rectCon = np.array(utils.reorder(second_biggest_rectCon), dtype=n
 third_biggest_rectCon = np.array(utils.reorder(third_biggest_rectCon), dtype=np.float32)
 
 # Warp main regions
-markerImgWidth, markerImgHeight = CHECKBOX_COLS * 89, CHECKBOX_ROWS * 18
+markerImgWidth, markerImgHeight = (CHECKBOX_COLS * BOX_WIDTH), (CHECKBOX_ROWS * BOX_HEIGHT)
 imgWarpColored, matrix = warp_image(img, biggest_rectCon, markerImgWidth, markerImgHeight)
 
-statImgWidth, statImgHeight = 564, 92
-imgWarpColoredS, matrixS = warp_image(img, second_biggest_rectCon, statImgWidth, statImgHeight)
+imgWarpColoredS, matrixS = warp_image(img, second_biggest_rectCon, STAT_RECT_WIDTH, STAT_RECT_HEIGHT)
 
 monthImgWidth, monthImgHeight = MONTH_COLS * 60, MONTH_ROWS * 26
 imgWarpColoredT, matrixT = warp_image(img, third_biggest_rectCon, monthImgWidth, monthImgHeight)
@@ -75,7 +85,7 @@ imgWarpColoredT, matrixT = warp_image(img, third_biggest_rectCon, monthImgWidth,
 imgThresh = threshold_image(cv2.cvtColor(imgWarpColored, cv2.COLOR_BGR2GRAY))
 boxes = utils.splitBoxes(imgThresh, CHECKBOX_ROWS, CHECKBOX_COLS)
 myPixelVal = np.array([cv2.countNonZero(box) for box in boxes]).reshape(CHECKBOX_ROWS, CHECKBOX_COLS)
-threshold = np.max(myPixelVal) * 0.5 + THRESHOLD_ADJUSTMENT
+threshold = np.max(myPixelVal) * 0.7 + THRESHOLD_ADJUSTMENT # 70% of the max pixel value
 binary_array = (myPixelVal > threshold).astype(int)
 
 # Mark detected checkboxes
@@ -114,6 +124,6 @@ imgInvWarpStats = cv2.warpPerspective(imgRawStats, np.linalg.inv(matrixS), (img.
 imgFinal[np.any(imgInvWarpStats != 0, axis=-1)] = imgInvWarpStats[np.any(imgInvWarpStats != 0, axis=-1)]
 
 ##################### Final Visualization #####################
-collage = utils.create_collage(img, imgFinal, scale=0.8)
+collage = utils.create_collage(img, imgFinal, scale=0.3)
 cv2.imshow('Collage', collage)
 cv2.waitKey(0)
