@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from PIL import ImageFont, ImageDraw, Image
-import calendar
+import calendar 
 
 def draw_bar_chart_on_image(image, percentage_array, display_array, font_path):
     # Define given parameters for the bar chart
@@ -135,9 +135,20 @@ def add_centered_custom_text(image, text, font_path, font_size, position_y, text
 
     return image_with_text
 
-def fill_year_template(year, habit_name, percentage_array, display_array, total_days, success_rate, habit_streak):
+def fill_year_template(year, habit_name, days_array, habit_streak):
 
     no_of_days = 366 if calendar.isleap(year) else 365
+
+    # Find the number of days in each month for the given year
+    days_in_months = [calendar.monthrange(year, month + 1)[1] for month in range(12)]
+
+    # Calculate the percentage array (as integers) for each month
+    percentage_array = [int((days / total_days) * 100) for days, total_days in zip(days_array, days_in_months)]
+
+    success_rate = int(sum(days_array) / no_of_days * 100)
+
+    # Total days habit performed in the year
+    total_days = sum(days_array)
 
     # Load the month template image
     year_images = {
@@ -147,7 +158,7 @@ def fill_year_template(year, habit_name, percentage_array, display_array, total_
     image = cv2.imread(year_images.get(no_of_days, 'assets/365-year.png'))
 
     # Draw the bar chart on the image with numbers on each bar using the custom font
-    image = draw_bar_chart_on_image(image, percentage_array, display_array, 'assets/Rubik-Regular.ttf')
+    image = draw_bar_chart_on_image(image, percentage_array, days_array, 'assets/Rubik-Regular.ttf')
 
     # Display circular progress bar
     image = draw_circular_progress_bar_on_image(image, success_rate, (474, 690), 65, 19)
@@ -169,15 +180,13 @@ def fill_year_template(year, habit_name, percentage_array, display_array, total_
     return image
 
 
-percentage_array = [74, 45, 80, 84, 80, 87, 74, 77, 87, 97, 80, 90] # Array representing the height percentage for each month
-display_array =    [23, 14, 25, 26, 25, 27, 23, 24, 27, 30, 25, 28] # Array representing the numbers to be displayed on each bar
-success_rate = 81                                                   # Success rate for the habit  (in percentage)
+# Example usage
+days_array =    [23, 14, 25, 26, 25, 27, 23, 24, 27, 30, 25, 28]    # No of days habit performed in each month
 habit_streak = 52                                                   # Current habit streak
-total_days = 297                                                    # Total days habit performed in the year
 year = 2022                                                         # Year
 habit_name = 'Exercise'                                             # Name of the habit
 
-output_image = fill_year_template(year, habit_name, percentage_array, display_array, total_days, success_rate, habit_streak)
+output_image = fill_year_template(year, habit_name, days_array, habit_streak)
 
 # Display the image with the bar chart and numbers
 cv2.imshow(f'{year}', output_image)
