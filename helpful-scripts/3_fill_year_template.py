@@ -63,6 +63,10 @@ def draw_bar_chart_on_image(image, percentage_array, display_array, font_path):
         # Define the position for the text (number) to be displayed on top of each bar
         text_position = (top_left_corner[0] + 3, top_left_corner[1] - 18)
 
+        # Check if the value is a single digit and format it
+        if value < 10:
+            text_position = (top_left_corner[0] + 8, top_left_corner[1] - 18)
+
         # Draw the text (number) using PIL
         draw.text(text_position, str(value), font=font, fill=(142, 151, 253))
 
