@@ -92,9 +92,9 @@ def fill_month_template(month, year, habit_name, total_days, habit_array):
 
     # Load the month template image
     month_images = {
-    28: 'assets/28-month.png',
-    29: 'assets/29-month.png',
-    30: 'assets/30-month.png',
+    28: 'assets/28-month-1.png',
+    29: 'assets/29-month-1.png',
+    30: 'assets/30-month-1.png',
     31: 'assets/31-month-1.png'}
 
     image = cv2.imread(month_images.get(days_in_month, 'assets/31-month.png'))
@@ -161,8 +161,8 @@ if __name__ == "__main__":
     circle_array = [
         1, 1, 1, 1, 1, 0, 1,
         1, 1, 1, 1, 1, 1, 0,
-        1, 0, 1, 1, 1, 1, 1,
-        1, 1, 0, 1, 1, 1, 0,
+        1, 1, 1, 1, 1, 1, 1,
+        1, 1, 0, 1, 1, 0, 0,
         1, 0, 1
     ]
 
