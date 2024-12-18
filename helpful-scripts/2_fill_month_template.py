@@ -87,9 +87,6 @@ def fill_month_template(month, year, habit_name, total_days, habit_array):
     # Create the heading for the month
     heading = f"{calendar.month_name[month].upper()} '{str(year)[-2:]}"
 
-    # Change the heading to title case i.e. "OCTOBER ' 24" to "October ' 24"
-    formatted_heading = heading.split("'")[0].strip().capitalize() + " ' " + heading.split("'")[1].strip()
-
     # Get no. of days in the month
     days_in_month = calendar.monthrange(year, month)[1]
 
@@ -98,7 +95,7 @@ def fill_month_template(month, year, habit_name, total_days, habit_array):
     28: 'assets/28-month.png',
     29: 'assets/29-month.png',
     30: 'assets/30-month.png',
-    31: 'assets/31-month.png'}
+    31: 'assets/31-month-1.png'}
 
     image = cv2.imread(month_images.get(days_in_month, 'assets/31-month.png'))
 
@@ -116,11 +113,32 @@ def fill_month_template(month, year, habit_name, total_days, habit_array):
     # Add text to the image
     image = add_text_to_image(image, heading, 'assets/Rubik-SemiBold.ttf', 48, (29, 16), (255, 255, 255))
     image = add_text_to_image(image, habit_name, 'assets/Rubik-Regular.ttf', 32, (29, 82), (148, 168, 254))
-    image = add_text_to_image(image, str(days_habit_performed), 'assets/Rubik-SemiBold.ttf', 36, (106, 590), (148, 168, 254))
-    image = add_text_to_image(image, formatted_heading, 'assets/Rubik-Medium.ttf', 24, (208, 686), (77, 87, 200))
-    image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-Bold.ttf', 24, (430, 686), (77, 87, 200))
-    image = add_text_to_image(image, str(total_days), 'assets/Rubik-Bold.ttf', 24, (430, 776), (77, 87, 200))
-    image = add_text_to_image(image, str(success_rate) + " %", 'assets/Rubik-Bold.ttf', 36, (416, 515), (154, 162, 253))
+
+    # Adjust the position of the text based on the number of digits
+    if days_habit_performed < 10:
+        image = add_text_to_image(image, str(days_habit_performed), 'assets/Rubik-SemiBold.ttf', 36, (123, 590), (148, 168, 254))
+    else:
+        image = add_text_to_image(image, str(days_habit_performed), 'assets/Rubik-SemiBold.ttf', 36, (106, 590), (148, 168, 254))
+
+    if habit_streak < 10:
+        image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-Bold.ttf', 24, (444, 686), (77, 87, 200))
+    else:
+        image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-Bold.ttf', 24, (430, 686), (77, 87, 200))
+
+    if total_days < 10:
+        image = add_text_to_image(image, str(total_days), 'assets/Rubik-Bold.ttf', 24, (444, 776), (77, 87, 200))
+    elif total_days < 100:
+        image = add_text_to_image(image, str(total_days), 'assets/Rubik-Bold.ttf', 24, (430, 776), (77, 87, 200))
+    else:
+        image = add_text_to_image(image, str(total_days), 'assets/Rubik-Bold.ttf', 24, (416, 776), (77, 87, 200))
+
+    if success_rate < 10:
+        image = add_text_to_image(image, str(success_rate) + " %", 'assets/Rubik-Bold.ttf', 36, (424, 515), (154, 162, 253))
+    elif success_rate < 100:
+        image = add_text_to_image(image, str(success_rate) + " %", 'assets/Rubik-Bold.ttf', 36, (416, 515), (154, 162, 253))
+    else:
+        image = add_text_to_image(image, str(success_rate) + " ", 'assets/Rubik-Bold.ttf', 36, (420, 515), (154, 162, 253))
+
 
     # Draw circular progress bar on the image
     image = draw_circular_progress_bar_on_image(image, success_rate, (455, 535))
@@ -131,27 +149,28 @@ def fill_month_template(month, year, habit_name, total_days, habit_array):
     return image
 
 
-# Example usage
-image = cv2.imread('assets/31-month.png')  # path to the image
+if __name__ == "__main__":
 
-# Array representing where circles should be drawn
-circle_array = [
-    1, 1, 1, 1, 1, 0, 1,
-    1, 1, 1, 1, 1, 1, 0,
-    1, 0, 1, 1, 1, 1, 1,
-    1, 1, 0, 1, 1, 1, 1,
-    1, 0, 1
-]
+    # Example usage
+    month = 8
+    year = 2024
+    habit_name = "Exercise"
+    total_days = 145
 
-month = 2
-year = 2024
-habit_name = "Exercise"
-total_days = 46
+    # Array representing where circles should be drawn
+    circle_array = [
+        1, 1, 1, 1, 1, 0, 1,
+        1, 1, 1, 1, 1, 1, 0,
+        1, 0, 1, 1, 1, 1, 1,
+        1, 1, 0, 1, 1, 1, 0,
+        1, 0, 1
+    ]
 
-# Fill the month template
-filled_image = fill_month_template(month, year, habit_name, total_days, circle_array)
 
-# Display the image using OpenCV
-cv2.imshow(f'{month} / {year}', filled_image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+    # Fill the month template
+    filled_image = fill_month_template(month, year, habit_name, total_days, circle_array)
+
+    # Display the image using OpenCV
+    cv2.imshow(f'{month} / {year}', filled_image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
