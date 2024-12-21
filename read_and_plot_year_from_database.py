@@ -13,7 +13,7 @@ from firebase_admin import credentials, firestore
 
 # Check if the app is already initialized
 if not firebase_admin._apps:
-    cred = credentials.Certificate("test-project-5ee35-firebase-adminsdk-hfang-9cf31efa1d.json")
+    cred = credentials.Certificate("firebase.json")
     firebase_admin.initialize_app(cred)
 
 # Initialize Firestore
@@ -187,16 +187,32 @@ def fill_year_template(year, habit_name, days_array, habit_streak):
     # Display circular progress bar
     image = draw_circular_progress_bar_on_image(image, success_rate, (474, 690), 65, 19)
 
-    image = add_text_to_image(image, f'{success_rate}%', 'assets/Rubik-Bold.ttf', 36, (439, 670), (154, 162, 253))
+    # Display the success rate
+    if success_rate < 10:
+        image = add_text_to_image(image, f'{success_rate}%', 'assets/Rubik-Bold.ttf', 36, (447, 670), (154, 162, 253))
+    elif success_rate < 100:
+        image = add_text_to_image(image, f'{success_rate}%', 'assets/Rubik-Bold.ttf', 36, (437, 670), (154, 162, 253))
+    else:
+        image = add_text_to_image(image, f'{success_rate}%', 'assets/Rubik-Bold.ttf', 36, (426, 670), (154, 162, 253))
 
     # Display the year on the image
     image = add_text_to_image(image, str(year), 'assets/Rubik-SemiBold.ttf', 48, (32, 12), (255, 255, 255))
 
     # Disply total days
-    image = add_text_to_image(image, str(total_days), 'assets/Rubik-SemiBold.ttf', 36, (99, 618), (77, 87, 200))
+    if total_days < 10:
+        image = add_text_to_image(image, "0" + str(total_days), 'assets/Rubik-SemiBold.ttf', 36, (122, 618), (77, 87, 200))
+    elif total_days < 100:
+        image = add_text_to_image(image, str(total_days), 'assets/Rubik-SemiBold.ttf', 36, (118, 618), (77, 87, 200))
+    else:
+        image = add_text_to_image(image, str(total_days), 'assets/Rubik-SemiBold.ttf', 36, (106, 618), (77, 87, 200))
 
     # Display streak
-    image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-SemiBold.ttf', 36, (110, 722), (77, 87, 200))
+    if habit_streak < 10:
+        image = add_text_to_image(image, "0" + str(habit_streak), 'assets/Rubik-SemiBold.ttf', 36, (116, 722), (77, 87, 200))
+    elif habit_streak < 100:
+        image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-SemiBold.ttf', 36, (116, 722), (77, 87, 200))
+    else:
+        image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-SemiBold.ttf', 36, (106, 722), (77, 87, 200))
 
     # Display the habit name
     image = add_centered_custom_text(image, habit_name, 'assets/Rubik-Regular.ttf', 24, 130, (231, 216, 200))

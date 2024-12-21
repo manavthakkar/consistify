@@ -13,7 +13,7 @@ from firebase_admin import credentials, firestore
 
 # Check if the app is already initialized
 if not firebase_admin._apps:
-    cred = credentials.Certificate("test-project-5ee35-firebase-adminsdk-hfang-9cf31efa1d.json")
+    cred = credentials.Certificate("firebase.json")
     firebase_admin.initialize_app(cred)
 
 # Initialize Firestore

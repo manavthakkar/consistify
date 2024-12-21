@@ -161,22 +161,42 @@ def fill_year_template(year, habit_name, days_array, habit_streak):
 
     image = cv2.imread(year_images.get(no_of_days, 'assets/365-year.png'))
 
+    # Remove trailing zeros to match the length of available data
+    while days_array and days_array[-1] == 0:
+        days_array.pop()
+
     # Draw the bar chart on the image with numbers on each bar using the custom font
     image = draw_bar_chart_on_image(image, percentage_array, days_array, 'assets/Rubik-Regular.ttf')
 
     # Display circular progress bar
     image = draw_circular_progress_bar_on_image(image, success_rate, (474, 690), 65, 19)
 
-    image = add_text_to_image(image, f'{success_rate}%', 'assets/Rubik-Bold.ttf', 36, (439, 670), (154, 162, 253))
+    # Display the success rate
+    if success_rate < 10:
+        image = add_text_to_image(image, f'{success_rate}%', 'assets/Rubik-Bold.ttf', 36, (447, 670), (154, 162, 253))
+    elif success_rate < 100:
+        image = add_text_to_image(image, f'{success_rate}%', 'assets/Rubik-Bold.ttf', 36, (437, 670), (154, 162, 253))
+    else:
+        image = add_text_to_image(image, f'{success_rate}%', 'assets/Rubik-Bold.ttf', 36, (426, 670), (154, 162, 253))
 
     # Display the year on the image
     image = add_text_to_image(image, str(year), 'assets/Rubik-SemiBold.ttf', 48, (32, 12), (255, 255, 255))
 
     # Disply total days
-    image = add_text_to_image(image, str(total_days), 'assets/Rubik-SemiBold.ttf', 36, (99, 618), (77, 87, 200))
+    if total_days < 10:
+        image = add_text_to_image(image, "0" + str(total_days), 'assets/Rubik-SemiBold.ttf', 36, (122, 618), (77, 87, 200))
+    elif total_days < 100:
+        image = add_text_to_image(image, str(total_days), 'assets/Rubik-SemiBold.ttf', 36, (118, 618), (77, 87, 200))
+    else:
+        image = add_text_to_image(image, str(total_days), 'assets/Rubik-SemiBold.ttf', 36, (106, 618), (77, 87, 200))
 
     # Display streak
-    image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-SemiBold.ttf', 36, (110, 722), (77, 87, 200))
+    if habit_streak < 10:
+        image = add_text_to_image(image, "0" + str(habit_streak), 'assets/Rubik-SemiBold.ttf', 36, (116, 722), (77, 87, 200))
+    elif habit_streak < 100:
+        image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-SemiBold.ttf', 36, (116, 722), (77, 87, 200))
+    else:
+        image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-SemiBold.ttf', 36, (106, 722), (77, 87, 200))
 
     # Display the habit name
     image = add_centered_custom_text(image, habit_name, 'assets/Rubik-Regular.ttf', 24, 130, (231, 216, 200))
