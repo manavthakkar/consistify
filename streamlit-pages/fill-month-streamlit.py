@@ -123,6 +123,14 @@ def fill_month_template(month, year, habit_name, total_days, habit_array):
 
     success_rate = int(days_habit_performed / days_in_month * 100)
 
+    # Trigger balloons and toast notification if the success rate is high
+    if success_rate > 80:
+        st.balloons()
+        st.toast(
+            f"Congratulations! 🎉 You achieved a success rate of {success_rate}% for {selected_habit} in {selected_month} {selected_year}!",
+            icon="🎉"
+        )
+
     # Add text to the image
     image = add_text_to_image(image, heading, 'assets/Rubik-SemiBold.ttf', 48, (29, 16), (255, 255, 255))
     image = add_text_to_image(image, habit_name, 'assets/Rubik-Regular.ttf', 32, (29, 82), (148, 168, 254))
