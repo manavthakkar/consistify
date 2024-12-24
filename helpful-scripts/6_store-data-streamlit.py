@@ -32,8 +32,7 @@ def store_user_data(user_id, user_data):
     """
     db.collection("users").document(user_id).set(user_data, merge=True)
 
-def process_image_and_generate_collage(img, year):
-
+def process_image_and_generate_collage(img, year, percentage_threshold=50):
     ##################### Constants #####################
     THRESHOLD_ADJUSTMENT = 0          # ± value to adjust the threshold
 
@@ -73,7 +72,7 @@ def process_image_and_generate_collage(img, year):
         return img_thresh
 
     ##################### Main Code #####################
-    # Preprocess the image
+    # Load and preprocess the image
     img = resize_image(img, scale_percent=100)
     imgContours = img.copy()
     imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -114,7 +113,7 @@ def process_image_and_generate_collage(img, year):
     imgThresh = threshold_image(cv2.cvtColor(imgWarpColored, cv2.COLOR_BGR2GRAY))
     boxes = utils.splitBoxes(imgThresh, CHECKBOX_ROWS, CHECKBOX_COLS)
     myPixelVal = np.array([cv2.countNonZero(box) for box in boxes]).reshape(CHECKBOX_ROWS, CHECKBOX_COLS)
-    threshold = np.max(myPixelVal) * 0.50 + THRESHOLD_ADJUSTMENT # 65% of the max pixel value
+    threshold = np.max(myPixelVal) * (percentage_threshold / 100) + THRESHOLD_ADJUSTMENT # 65% of the max pixel value
     binary_array = (myPixelVal > threshold).astype(int)
 
     # Mark detected checkboxes
@@ -153,9 +152,10 @@ def process_image_and_generate_collage(img, year):
     imgFinal[np.any(imgInvWarpStats != 0, axis=-1)] = imgInvWarpStats[np.any(imgInvWarpStats != 0, axis=-1)]
 
     ##################### Final Visualization #####################
-    collage = utils.create_collage(img, imgFinal, scale=0.3)
+    #collage = utils.create_collage(img, imgFinal, scale=0.3)
     
-    return collage, month_name, binary_array
+    return imgFinal, month_name, binary_array
+
 
 def get_days_in_month(year, month_name):
     """
@@ -218,16 +218,26 @@ def store_data_main():
 
     if uploaded_file is not None:
         st.write("Processing your image...")
+        
+        # Slider for percentage threshold
+        percentage_threshold = st.slider(
+            "Set the percentage threshold for checkbox detection:",
+            min_value=0,
+            max_value=100,
+            value=50,  # Default value
+            step=1
+        )
+        
         # Convert the uploaded file to OpenCV format
         file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
         img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
 
         try:
-            # Process the image
-            collage_image, month_name, binary_array = process_image_and_generate_collage(img, year)
+            # Process the image with the user-defined threshold
+            processed_image, month_name, binary_array = process_image_and_generate_collage(img, year, percentage_threshold)
 
             # Convert BGR to RGB for Streamlit display
-            collage_image_rgb = cv2.cvtColor(collage_image, cv2.COLOR_BGR2RGB)
+            collage_image_rgb = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
 
             # Get the number of days in the detected month
             num_days = get_days_in_month(year, month_name)
@@ -237,7 +247,7 @@ def store_data_main():
 
             # Display the processed results
             st.subheader("Processed Results")
-            st.image(collage_image_rgb, caption="Collage Image", use_column_width=True)
+            st.image(collage_image_rgb, caption="Processed Image", use_column_width=True)
             st.write(f"**Detected Month:** {month_name}")
             st.write(f"**Number of Days in {month_name}:** {num_days}")
             st.write("**Binary Array of Checkbox Values (Trimmed):**")
@@ -280,6 +290,7 @@ def store_data_main():
 
         except Exception as e:
             st.error(f"An error occurred during processing: {e}")
+
 
 if __name__ == "__main__":
     store_data_main()
