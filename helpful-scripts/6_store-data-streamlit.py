@@ -7,9 +7,6 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from streamlit_google_auth import Authenticate
 
-# Set custom page config
-st.set_page_config(page_title="Store Habit Data", page_icon="📂")
-
 # Firebase Initialization
 if not firebase_admin._apps:
     cred = credentials.Certificate("firebase.json")
@@ -147,19 +144,48 @@ def get_days_in_month(year, month_name):
     return num_days
 
 # Streamlit App
-def store_data_main():
-    # Check if the user is already logged in
-    if not st.session_state.get('connected', False):
-        st.warning("Please log in on the home page to access this feature.")
-        st.stop()
+def main():
+    st.title("Habit Tracker with Google Authentication")
 
-    st.title("Habit Tracker - Store Data")
+    # Google Authentication
+    authenticator = Authenticate(
+        secret_credentials_path='google_credentials.json',
+        cookie_name='auth_cookie',
+        cookie_key='this_is_secret',
+        redirect_uri='http://localhost:8501',
+    )
+
+    # Check authentication
+    authenticator.check_authentification()
+
+    # Show login button
+    authenticator.login()
+
+    if not st.session_state.get('connected', False):
+        # Show information only if the user is not logged in
+        st.write("### Welcome to the Habit Tracker App!")
+        st.write("""
+        This app allows you to process habit tracker images, extract data, and save it securely in the cloud.
+        With this tool, you can:
+        - Upload an image of your habit tracker.
+        - Detect and analyze habits for a specific month.
+        - Save your data to the cloud for future access.
+
+        **Note**: You must log in with your Google account to save your data. Click the Google login button below to proceed.
+        """)
+        st.warning("Please log in with Google to access the app features.")
+        st.stop()
+    
+
+    # Display user details after login
     st.image(st.session_state['user_info'].get('picture'), width=80)
     st.write(f"**Hello, {st.session_state['user_info'].get('name')}!**")
     st.write(f"Your email is **{st.session_state['user_info'].get('email')}**.")
-
-    # Retrieve Google OAuth user ID
     user_id = st.session_state['oauth_id']
+
+    if st.button('Log out'):
+        authenticator.logout()
+        st.stop()
 
     # Input for year
     st.header("Image Processing")
@@ -232,6 +258,5 @@ def store_data_main():
         except Exception as e:
             st.error(f"An error occurred during processing: {e}")
 
-
 if __name__ == "__main__":
-    store_data_main()
+    main()
