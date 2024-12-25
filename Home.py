@@ -1,6 +1,7 @@
 import streamlit as st
 from streamlit_google_auth import Authenticate
 import utils
+from PIL import Image
 
 st.set_page_config(page_title="Home", page_icon="🏠", layout="centered")
 
@@ -28,9 +29,81 @@ def home_page():
 
     # If the user is authenticated, display navigation and user details
     if st.session_state.get('connected', False):
-        st.image(st.session_state['user_info'].get('picture'), width=80)
-        st.write(f"**Hello, {st.session_state['user_info'].get('name')}!**")
-        st.write(f"Your email: **{st.session_state['user_info'].get('email')}**")
+        st.subheader(f"Hello, {st.session_state['user_info'].get('name').split()[0]}! 👋")
+        #st.image(st.session_state['user_info'].get('picture'), width=80)
+        #st.write(f"**Hello, {st.session_state['user_info'].get('name')}!**")
+        #st.write(f"Logged in as: **{st.session_state['user_info'].get('email')}**")
+
+        st.markdown("""
+            **Consistify** is your go-to solution for effortless habit tracking, helping you stay consistent and focused. Consistify makes the process simple and effective! 🏆
+
+            Here’s how it works: track your progress daily on a printable template, then upload a photo of your completed template at the end of the month. From there, the system analyzes your data to create **detailed monthly and yearly insights**. 📊
+
+            With these insights, you can easily monitor your progress, uncover trends, and stay inspired to achieve your goals. Whether you’re building new habits or strengthening existing ones, **Consistify** provides the feedback you need to succeed. 🚀
+                                """)
+        
+        st.subheader("How to Use Consistify 🛠️")
+        st.markdown("""1. **Print and Fill the Template** 📝: Download the habit tracking template and keep it handy. Mark a ❌ each day you complete a habit.
+        2. **Snap and Upload** 📸: At the end of the month, take a picture of your completed template and upload it to Consistify. 
+        3. **Let the Magic Happen** ✨: Our app analyzes the image, extracts all habit data, and stores it securely.
+        4. **Get Insights** 📊: View your **monthly** and **yearly habit insights** to track your progress over time.
+        5. **Manage Your Data** 🗑️: Delete your **monthly**, **yearly**, or **lifetime data** anytime for full control.""")
+        
+        template_link = "https://template-link.com/template.pdf"  
+        st.markdown(f"[📥 Download the consistify template]({template_link})")
+
+        st.write("**Filled template example:**")
+        st.markdown("""
+        **Cover the portion of the template when clicking a picture as shown in the image below**. 
+        This is required by the system to detect the markers accurately. 
+
+        - You can cover it with your **finger** ☝️ or use any **small object** 🧩.
+        - Make sure the rest of the template is clearly visible in the picture. 📷
+                
+        You can try uploading this image as well 😉
+        """)
+        
+        # Display Template Image
+        template_image_path = "assets/example.png"  
+        template_image = Image.open(template_image_path)
+        st.image(template_image, caption="Filled template example 🖼️", use_container_width=True)
+
+        # Display Template Image
+        # processed_image_path = "assets/processed-example.png"  
+        # processed_image = Image.open(processed_image_path)
+        # st.image(processed_image, caption="Processed template example 🖼️", use_container_width=True)
+
+        st.markdown("""
+        ### Visualize Your Progress Like Never Before! 📊
+
+        Consistify takes your habit tracking to the next level by transforming your data into beautiful, easy-to-understand visualizations. See how your habits evolve over time with:
+
+        - **Monthly Insights**: Track your performance for each habit and identify patterns within the month.
+        - **Yearly Trends**: Get a bird’s-eye view of your progress across the entire year to stay motivated and focused.
+
+        Below is an example of how your **monthly** and **yearly visualizations** will look:
+        """)
+        st.image("assets/filled-month.png", caption="Monthly Visualization Example 📅", use_container_width=True)
+        st.image("assets/filled-year.png", caption="Yearly Overview Example 📈", use_container_width=True)
+
+        # Privacy Policy
+        st.header("Privacy Policy 🛡️")
+        st.markdown("""
+        At Consistify, your privacy is our priority. Here’s how we keep your data safe:
+        - **Cloud Storage** ☁️: Your habit data is securely stored in the cloud for easy access anytime.
+        - **Anonymous Identification** 🆔: Users are identified by a unique user ID, ensuring complete anonymity.
+        - **Your Choice** 🗑️: You can delete any or all of your data (monthly, yearly, or lifetime) whenever you want.
+        """)
+
+        # Contact Information
+        st.header("Get in Touch 📬")
+        st.markdown("""
+        Have questions or feedback? Feel free to reach out to me!
+        - [E-mail](mailto:manavt2000@gmail.com) 
+        - [LinkedIn](https://www.linkedin.com/in/manavt2000) 
+
+        I'd love to hear from you and help you make the most of Consistify! 🌟
+        """)
 
         # Navigation menu using session state
         # st.sidebar.title("Navigation")
@@ -46,7 +119,7 @@ def home_page():
         # st.session_state["selected_page"] = pages[selected_page]
 
         # Logout button in the sidebar
-        if st.button("Log out"):
+        if st.sidebar.button("Log out"):
             authenticator.logout()
 
         # Inform the user about navigation
@@ -54,7 +127,7 @@ def home_page():
 
     # If not authenticated, show a login prompt
     else:
-        st.warning("Please log in using the button above to access the app.")
+        st.info("Please log in using the button above to get started.")
 
 if __name__ == "__main__":
     home_page()
