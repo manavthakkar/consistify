@@ -1,5 +1,6 @@
 import streamlit as st
 from streamlit_google_auth import Authenticate
+import utils
 
 st.set_page_config(page_title="Home", page_icon="🏠", layout="centered")
 
@@ -21,6 +22,9 @@ def home_page():
 
     # Login or Logout button
     authenticator.login()
+
+    # Display the Consistify logo
+    utils.add_side_logo()
 
     # If the user is authenticated, display navigation and user details
     if st.session_state.get('connected', False):

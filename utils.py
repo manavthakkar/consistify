@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import os
 import pandas as pd
+import base64
+import streamlit as st
 
 def stackImages(imgArray,scale,lables=[]):
     rows = len(imgArray)
@@ -545,3 +547,35 @@ def create_collage(image1, image2, scale=0.6):
         collage = cv2.resize(collage, (new_width, new_height), interpolation=cv2.INTER_AREA)
     
     return collage
+
+############################ Streamlit related functions ############################
+
+def get_base64_image(file_path):
+    with open(file_path, "rb") as file:
+        data = file.read()
+    return base64.b64encode(data).decode("utf-8")
+
+# Function to add logo at the absolute top of the sidebar
+def add_side_logo():
+
+    base64_image = get_base64_image("assets/consistify-logo.png")
+
+    st.markdown(
+    f"""
+    <style>
+    [data-testid="stSidebar"]::before {{
+        content: "";
+        display: block;
+        margin-top: 20px; /* Add some space above the logo */
+        margin-bottom: -60px; /* Adjust space below the logo */
+        background-image: url('data:image/png;base64,{base64_image}');
+        background-size: contain;
+        background-repeat: no-repeat;
+        height: 80px; /* Adjust height as needed */
+        width: 100%;
+        background-position: center;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)

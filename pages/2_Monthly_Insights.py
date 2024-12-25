@@ -7,6 +7,7 @@ import numpy as np
 import firebase_admin
 from firebase_admin import credentials, firestore
 from PIL import ImageDraw, ImageFont
+import utils
 
 st.set_page_config(page_title="Monthly Insights", page_icon="📅")
 
@@ -236,6 +237,9 @@ def get_month_number(month_name):
         return "Invalid month name"
 
 def script2_main():
+
+    utils.add_side_logo()
+
     # Check if the user is authenticated
     if not st.session_state.get('connected', False):
         st.warning("Please log in from the Home page to access this feature.")

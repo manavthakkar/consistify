@@ -317,6 +317,9 @@ def longest_habit_streak_across_year(data, year, habit_name):
     return longest_streak
 
 def script3_main():
+    
+    utils.add_side_logo()
+    
     # Check if the user is authenticated
     if not st.session_state.get('connected', False):
         st.warning("Please log in from the Home page to access this feature.")

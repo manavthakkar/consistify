@@ -167,6 +167,9 @@ def get_days_in_month(year, month_name):
     return num_days
 
 def script1_main():
+
+    utils.add_side_logo()
+    
     # Check if the user is authenticated
     if not st.session_state.get('connected', False):
         st.warning("Please log in from the Home page to access this feature.")
