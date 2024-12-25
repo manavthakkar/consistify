@@ -321,88 +321,93 @@ authenticator = Authenticate(
     redirect_uri='http://localhost:8501',
 )
 
-# Authentication check
-authenticator.check_authentification()
+def fill_year_main():
 
-# Render the login/logout button
-authenticator.login()
+    # Authentication check
+    authenticator.check_authentification()
 
-# If the user is connected
-if st.session_state.get('connected', False):
-    # Display user information
-    st.image(st.session_state['user_info'].get('picture'))
-    st.write(f"Hello, {st.session_state['user_info'].get('name')}")
-    st.write(f"Your email is {st.session_state['user_info'].get('email')}")
+    # Render the login/logout button
+    authenticator.login()
 
-    # Retrieve Google OAuth user ID
-    user_id = st.session_state['oauth_id']
+    # If the user is connected
+    if st.session_state.get('connected', False):
+        # Display user information
+        st.image(st.session_state['user_info'].get('picture'))
+        st.write(f"Hello, {st.session_state['user_info'].get('name')}")
+        st.write(f"Your email is {st.session_state['user_info'].get('email')}")
 
-    # Fetch user data dynamically
-    def get_user_data(user_id):
-        doc = db.collection("users").document(user_id).get()
-        if doc.exists:
-            return doc.to_dict()
+        # Retrieve Google OAuth user ID
+        user_id = st.session_state['oauth_id']
+
+        # Fetch user data dynamically
+        def get_user_data(user_id):
+            doc = db.collection("users").document(user_id).get()
+            if doc.exists:
+                return doc.to_dict()
+            else:
+                return None
+
+        # Helper functions (provided earlier in your script)
+        # Include `habit_days_count_year`, `longest_habit_streak_across_year`,
+        # `fill_year_template`, `draw_bar_chart_on_image`, and other functions.
+
+        user_data = get_user_data(user_id)
+
+        if user_data:
+            # Extract available years from user_data
+            available_years = sorted(user_data.keys())
+            selected_year = st.selectbox("Select Year", available_years)
+
+            # Extract habits dynamically for the selected year
+            habits_in_year = set()
+            for month_data in user_data[selected_year].values():
+                habits_in_year.update(month_data.keys())
+            habits_in_year = sorted(habits_in_year)
+            selected_habit = st.selectbox("Select Habit", habits_in_year)
+
+            # Generate Visualization Button
+            if st.button("Generate Year Visualization"):
+                try:
+                    # Calculate habit days count and longest streak
+                    days_array = habit_days_count_year(user_data, selected_year, selected_habit)
+                    habit_streak = longest_habit_streak_across_year(user_data, selected_year, selected_habit)
+
+                    # Generate the year visualization
+                    output_image = fill_year_template(
+                        int(selected_year), selected_habit, days_array, habit_streak
+                    )
+
+                    # Convert the OpenCV image to a format suitable for Streamlit
+                    img_rgb = cv2.cvtColor(output_image, cv2.COLOR_BGR2RGB)
+                    img_pil = Image.fromarray(img_rgb)
+
+                    # Display the generated image
+                    st.image(img_pil, caption=f"{selected_habit} - {selected_year}")
+
+                    # Convert the image to bytes for download
+                    img_bytes = io.BytesIO()
+                    img_pil.save(img_bytes, format='PNG')
+                    img_bytes.seek(0)
+
+                    # Add a download button
+                    st.download_button(
+                        label="Download Year Visualization",
+                        data=img_bytes,
+                        file_name=f"{selected_habit}_{selected_year}_Year_Visualization.png",
+                        mime="image/png"
+                    )
+
+                except Exception as e:
+                    st.error(f"An error occurred: {e}")
         else:
-            return None
+            st.error("No data found for your user ID.")
 
-    # Helper functions (provided earlier in your script)
-    # Include `habit_days_count_year`, `longest_habit_streak_across_year`,
-    # `fill_year_template`, `draw_bar_chart_on_image`, and other functions.
+        # Add logout button
+        if st.button("Log out"):
+            authenticator.logout()
 
-    user_data = get_user_data(user_id)
-
-    if user_data:
-        # Extract available years from user_data
-        available_years = sorted(user_data.keys())
-        selected_year = st.selectbox("Select Year", available_years)
-
-        # Extract habits dynamically for the selected year
-        habits_in_year = set()
-        for month_data in user_data[selected_year].values():
-            habits_in_year.update(month_data.keys())
-        habits_in_year = sorted(habits_in_year)
-        selected_habit = st.selectbox("Select Habit", habits_in_year)
-
-        # Generate Visualization Button
-        if st.button("Generate Year Visualization"):
-            try:
-                # Calculate habit days count and longest streak
-                days_array = habit_days_count_year(user_data, selected_year, selected_habit)
-                habit_streak = longest_habit_streak_across_year(user_data, selected_year, selected_habit)
-
-                # Generate the year visualization
-                output_image = fill_year_template(
-                    int(selected_year), selected_habit, days_array, habit_streak
-                )
-
-                # Convert the OpenCV image to a format suitable for Streamlit
-                img_rgb = cv2.cvtColor(output_image, cv2.COLOR_BGR2RGB)
-                img_pil = Image.fromarray(img_rgb)
-
-                # Display the generated image
-                st.image(img_pil, caption=f"{selected_habit} - {selected_year}")
-
-                # Convert the image to bytes for download
-                img_bytes = io.BytesIO()
-                img_pil.save(img_bytes, format='PNG')
-                img_bytes.seek(0)
-
-                # Add a download button
-                st.download_button(
-                    label="Download Year Visualization",
-                    data=img_bytes,
-                    file_name=f"{selected_habit}_{selected_year}_Year_Visualization.png",
-                    mime="image/png"
-                )
-
-            except Exception as e:
-                st.error(f"An error occurred: {e}")
     else:
-        st.error("No data found for your user ID.")
+        st.warning("Please log in to use this app.")
 
-    # Add logout button
-    if st.button("Log out"):
-        authenticator.logout()
-
-else:
-    st.warning("Please log in to use this app.")
+if __name__ == "__main__":
+    fill_year_main()

@@ -127,7 +127,7 @@ def fill_month_template(month, year, habit_name, total_days, habit_array):
     if success_rate > 80:
         st.balloons()
         st.toast(
-            f"Congratulations! 🎉 You achieved a success rate of {success_rate}% for {selected_habit} in {selected_month} {selected_year}!",
+            f"Congratulations! 🎉 You achieved a success rate of {success_rate}% for {habit_name} in {month} {year}!",
             icon="🎉"
         )
 
@@ -233,102 +233,108 @@ def get_month_number(month_name):
         return month_number
     except ValueError:
         return "Invalid month name"
-
-# Initialize Google Authenticator
-authenticator = Authenticate(
-    secret_credentials_path='google_credentials.json',
-    cookie_name='abcd',
-    cookie_key='abcd',
-    redirect_uri='http://localhost:8501',
-)
-
-# Authentication check
-authenticator.check_authentification()
-
-# Render the login/logout button
-authenticator.login()
-
-# If the user is connected
-if st.session_state.get('connected', False):
-    # Display user information
-    st.image(st.session_state['user_info'].get('picture'))
-    st.write(f"Hello, {st.session_state['user_info'].get('name')}")
-    st.write(f"Your email is {st.session_state['user_info'].get('email')}")
-
-    # Retrieve Google OAuth user ID
-    user_id = st.session_state['oauth_id']
-
-    # Fetch user data dynamically
-    def get_user_data(user_id):
-        doc = db.collection("users").document(user_id).get()
-        if doc.exists:
-            return doc.to_dict()
-        else:
-            return None
-
-    # Helper to sort months in chronological order
-    def sort_months_chronologically(months):
-        month_order = list(calendar.month_name)[1:]  # Skip the empty string at index 0
-        return sorted(months, key=lambda x: month_order.index(x))
-
-    # Fetch data for the authenticated user
-    user_data = get_user_data(user_id)
-
-    if user_data:
-        # Extract available years, months, and habits from user_data
-        available_years = sorted(user_data.keys())
-        selected_year = st.selectbox("Select Year", available_years)
-
-        available_months = sort_months_chronologically(list(user_data[selected_year].keys()))
-        selected_month = st.selectbox("Select Month", available_months)
-
-        available_habits = sorted(user_data[selected_year][selected_month].keys())
-        selected_habit = st.selectbox("Select Habit", available_habits)
-
-        # Generate Visualization Button
-        if st.button("Generate Visualization"):
-            try:
-                # Convert month name to month number
-                month_number = list(calendar.month_name).index(selected_month)
-
-                # Fetch habit data and calculate cumulative sum
-                habit_array, total_days = get_habit_data_and_cumulative_sum(
-                    user_data, selected_year, selected_month, selected_habit
-                )
-
-                # Create the filled month template
-                filled_image = fill_month_template(
-                    month_number, int(selected_year), selected_habit, total_days, habit_array
-                )
-
-                # Convert the OpenCV image to a format suitable for Streamlit
-                img_rgb = cv2.cvtColor(filled_image, cv2.COLOR_BGR2RGB)
-                img_pil = Image.fromarray(img_rgb)
-
-                # Display the image
-                st.image(img_pil, caption=f"{selected_habit} - {selected_month} {selected_year}")
-
-                # Convert image to bytes for download
-                img_bytes = io.BytesIO()
-                img_pil.save(img_bytes, format='PNG')
-                img_bytes.seek(0)
-
-                # Add a download button
-                st.download_button(
-                    label="Download Image",
-                    data=img_bytes,
-                    file_name=f"{selected_habit}_{selected_month}_{selected_year}.png",
-                    mime="image/png"
-                )
-
-            except Exception as e:
-                st.error(f"An error occurred: {e}")
-    else:
-        st.error("No data found for your user ID.")
     
-    # Add logout button
-    if st.button("Log out"):
-        authenticator.logout()
 
-else:
-    st.warning("Please log in to use this app.")
+def fill_month_main():
+
+    # Initialize Google Authenticator
+    authenticator = Authenticate(
+        secret_credentials_path='google_credentials.json',
+        cookie_name='abcd',
+        cookie_key='abcd',
+        redirect_uri='http://localhost:8501',
+    )
+
+    # Authentication check
+    authenticator.check_authentification()
+
+    # Render the login/logout button
+    authenticator.login()
+
+    # If the user is connected
+    if st.session_state.get('connected', False):
+        # Display user information
+        st.image(st.session_state['user_info'].get('picture'))
+        st.write(f"Hello, {st.session_state['user_info'].get('name')}")
+        st.write(f"Your email is {st.session_state['user_info'].get('email')}")
+
+        # Retrieve Google OAuth user ID
+        user_id = st.session_state['oauth_id']
+
+        # Fetch user data dynamically
+        def get_user_data(user_id):
+            doc = db.collection("users").document(user_id).get()
+            if doc.exists:
+                return doc.to_dict()
+            else:
+                return None
+
+        # Helper to sort months in chronological order
+        def sort_months_chronologically(months):
+            month_order = list(calendar.month_name)[1:]  # Skip the empty string at index 0
+            return sorted(months, key=lambda x: month_order.index(x))
+
+        # Fetch data for the authenticated user
+        user_data = get_user_data(user_id)
+
+        if user_data:
+            # Extract available years, months, and habits from user_data
+            available_years = sorted(user_data.keys())
+            selected_year = st.selectbox("Select Year", available_years)
+
+            available_months = sort_months_chronologically(list(user_data[selected_year].keys()))
+            selected_month = st.selectbox("Select Month", available_months)
+
+            available_habits = sorted(user_data[selected_year][selected_month].keys())
+            selected_habit = st.selectbox("Select Habit", available_habits)
+
+            # Generate Visualization Button
+            if st.button("Generate Visualization"):
+                try:
+                    # Convert month name to month number
+                    month_number = list(calendar.month_name).index(selected_month)
+
+                    # Fetch habit data and calculate cumulative sum
+                    habit_array, total_days = get_habit_data_and_cumulative_sum(
+                        user_data, selected_year, selected_month, selected_habit
+                    )
+
+                    # Create the filled month template
+                    filled_image = fill_month_template(
+                        month_number, int(selected_year), selected_habit, total_days, habit_array
+                    )
+
+                    # Convert the OpenCV image to a format suitable for Streamlit
+                    img_rgb = cv2.cvtColor(filled_image, cv2.COLOR_BGR2RGB)
+                    img_pil = Image.fromarray(img_rgb)
+
+                    # Display the image
+                    st.image(img_pil, caption=f"{selected_habit} - {selected_month} {selected_year}")
+
+                    # Convert image to bytes for download
+                    img_bytes = io.BytesIO()
+                    img_pil.save(img_bytes, format='PNG')
+                    img_bytes.seek(0)
+
+                    # Add a download button
+                    st.download_button(
+                        label="Download Image",
+                        data=img_bytes,
+                        file_name=f"{selected_habit}_{selected_month}_{selected_year}.png",
+                        mime="image/png"
+                    )
+
+                except Exception as e:
+                    st.error(f"An error occurred: {e}")
+        else:
+            st.error("No data found for your user ID.")
+        
+        # Add logout button
+        if st.button("Log out"):
+            authenticator.logout()
+
+    else:
+        st.warning("Please log in to use this app.")
+
+if __name__ == "__main__":
+    fill_month_main()

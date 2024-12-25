@@ -247,7 +247,7 @@ def store_data_main():
 
             # Display the processed results
             st.subheader("Processed Results")
-            st.image(collage_image_rgb, caption="Processed Image", use_column_width=True)
+            st.image(collage_image_rgb, caption="Processed Image", use_container_width=True)
             st.write(f"**Detected Month:** {month_name}")
             st.write(f"**Number of Days in {month_name}:** {num_days}")
             st.write("**Binary Array of Checkbox Values (Trimmed):**")
