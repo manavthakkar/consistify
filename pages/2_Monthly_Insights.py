@@ -8,6 +8,8 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from PIL import ImageDraw, ImageFont
 
+st.set_page_config(page_title="Monthly Insights", page_icon="📅")
+
 # Initialize Firebase Admin SDK
 if not firebase_admin._apps:
     cred = credentials.Certificate("firebase.json")

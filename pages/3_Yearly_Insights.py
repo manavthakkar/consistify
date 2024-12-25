@@ -9,6 +9,8 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from PIL import ImageDraw, ImageFont
 
+st.set_page_config(page_title="Yearly Insights", page_icon="📈")
+
 # Firebase Initialization
 if not firebase_admin._apps:
     cred = credentials.Certificate("firebase.json")

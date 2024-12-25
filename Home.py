@@ -1,16 +1,20 @@
 import streamlit as st
 from streamlit_google_auth import Authenticate
 
+st.set_page_config(page_title="Home", page_icon="🏠", layout="centered")
+
+st.image("assets/consistify-logo-full.png", width=300)
+
 # Initialize Google Authentication
 authenticator = Authenticate(
-    secret_credentials_path='google_credentials.json',  # Path to your Google credentials
+    secret_credentials_path='google_credentials.json', # Path to Google credentials
     cookie_name='auth_cookie',                         # Cookie name for the session
     cookie_key='this_is_secret',                       # Secret key for the cookie
     redirect_uri='http://localhost:8501',              # Redirect URI for the Streamlit app
 )
 
 def home_page():
-    st.title("Welcome to the Habit Tracker App")
+    st.title("Welcome to Consistify!")
 
     # Check authentication status
     authenticator.check_authentification()
@@ -26,19 +30,19 @@ def home_page():
 
         # Navigation menu using session state
         # st.sidebar.title("Navigation")
-        pages = {
-            "Home": "home",
-            "Image Processing": "script1",
-            "Monthly Visualization": "script2",
-            "Yearly Overview": "script3",
-        }
+        # pages = {
+        #     "Home": "home",
+        #     "Image Processing": "script1",
+        #     "Monthly Visualization": "script2",
+        #     "Yearly Overview": "script3",
+        # }
 
         # # Select the page
         # selected_page = st.sidebar.selectbox("Choose a page", list(pages.keys()))
         # st.session_state["selected_page"] = pages[selected_page]
 
         # Logout button in the sidebar
-        if st.sidebar.button("Log out"):
+        if st.button("Log out"):
             authenticator.logout()
 
         # Inform the user about navigation
