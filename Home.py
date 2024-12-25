@@ -43,7 +43,8 @@ def home_page():
                                 """)
         
         st.subheader("How to Use Consistify 🛠️")
-        st.markdown("""1. **Print and Fill the Template** 📝: Download the habit tracking template and keep it handy. Mark a ❌ each day you complete a habit.
+        st.markdown("""
+        1. **Print and Fill the Template** 📝: Download the habit tracking template and keep it handy. Mark a ❌ each day you complete a habit.
         2. **Snap and Upload** 📸: At the end of the month, take a picture of your completed template and upload it to Consistify. 
         3. **Let the Magic Happen** ✨: Our app analyzes the image, extracts all habit data, and stores it securely.
         4. **Get Insights** 📊: View your **monthly** and **yearly habit insights** to track your progress over time.
