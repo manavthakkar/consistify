@@ -6,12 +6,8 @@ import utils
 
 st.set_page_config(page_title="Clear Data", page_icon="🗑️")
 
-# Initialize Firebase Admin SDK
-if not firebase_admin._apps:
-    cred = credentials.Certificate("firebase.json")
-    firebase_admin.initialize_app(cred)
-
-db = firestore.client()
+# Initialize Firebase 
+db = utils.initialize_firestore()
 
 def get_user_data(user_id):
     """

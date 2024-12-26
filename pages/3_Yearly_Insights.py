@@ -11,13 +11,8 @@ from PIL import ImageDraw, ImageFont
 
 st.set_page_config(page_title="Yearly Insights", page_icon="📈")
 
-# Firebase Initialization
-firebase_json = dict(st.secrets["firebase"])
-if not firebase_admin._apps:
-    cred = credentials.Certificate(firebase_json)
-    firebase_admin.initialize_app(cred)
-
-db = firestore.client()
+# Initialize Firebase
+db = utils.initialize_firestore()
 
 def draw_bar_chart_on_image(image, percentage_array, display_array, font_path):
     # Define given parameters for the bar chart

@@ -4,6 +4,8 @@ import os
 import pandas as pd
 import base64
 import streamlit as st
+import firebase_admin
+from firebase_admin import credentials, firestore
 
 def stackImages(imgArray,scale,lables=[]):
     rows = len(imgArray)
@@ -579,3 +581,10 @@ def add_side_logo():
     """,
     unsafe_allow_html=True
 )
+    
+def initialize_firestore():
+    if not firebase_admin._apps:
+        cred = credentials.Certificate(dict(st.secrets["firebase"]))
+        firebase_admin.initialize_app(cred)
+    return firestore.client()
+

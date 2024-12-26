@@ -4,20 +4,13 @@ import io
 import calendar
 import cv2
 import numpy as np
-import firebase_admin
-from firebase_admin import credentials, firestore
 from PIL import ImageDraw, ImageFont
 import utils
 
 st.set_page_config(page_title="Monthly Insights", page_icon="📅")
 
-# Initialize Firebase Admin SDK
-firebase_json = dict(st.secrets["firebase"])
-if not firebase_admin._apps:
-    cred = credentials.Certificate(firebase_json)
-    firebase_admin.initialize_app(cred)
-
-db = firestore.client()
+# Initialize Firebase
+db = utils.initialize_firestore()
 
 def add_text_to_image(image, text, font_path, size, position, color):
     # Convert the image from OpenCV (BGR) to PIL (RGB) format

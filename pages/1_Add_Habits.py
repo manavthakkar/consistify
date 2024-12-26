@@ -3,19 +3,11 @@ import cv2
 import numpy as np
 import calendar
 import utils
-import firebase_admin
-from firebase_admin import credentials, firestore
 
 st.set_page_config(page_title="Add Habits", page_icon="📂")
 
-# Firebase Initialization
-firebase_json = dict(st.secrets["firebase"])
-if not firebase_admin._apps:
-    cred = credentials.Certificate(firebase_json)
-    firebase_admin.initialize_app(cred)
-
-# Initialize Firestore
-db = firestore.client()
+# Initialize Firebase
+db = utils.initialize_firestore()
 
 def delete_data_for_year_month(user_id, year, month):
     """
