@@ -16,6 +16,32 @@ if not firebase_admin._apps:
 # Initialize Firestore
 db = firestore.client()
 
+def delete_data_for_year_month(user_id, year, month):
+    """
+    Deletes data for a specific year and month from a user's document in Firestore.
+    
+    Args:
+        user_id (str): The ID of the user.
+        year (str): The year to delete (e.g., "2020").
+        month (str): The month to delete (e.g., "January").
+    """
+    try:
+        # Reference the Firestore document for the user
+        user_ref = db.collection("users").document(user_id)
+
+        # Build the path to the specific year and month
+        field_path = f"{year}.{month}"
+
+        # Use Firestore's update method with DELETE_FIELD to remove the data
+        from google.cloud.firestore_v1 import DELETE_FIELD
+        user_ref.update({
+            field_path: DELETE_FIELD
+        })
+        
+        print(f"Data for {year}, {month} has been successfully deleted.")
+    except Exception as e:
+        print(f"An error occurred while deleting data: {e}")
+
 def get_user_data(user_id, year, month_name):
     """
     Retrieve user data for a specific year and month from Firestore.
@@ -250,6 +276,7 @@ def script1_main():
                 st.write("Data already exists for this user, year, and month.")
                 overwrite = st.radio("Do you want to overwrite the existing data?", ("No", "Yes"))
                 if overwrite == "Yes" and st.button("Save Data"):
+                    delete_data_for_year_month(user_id, year, month_name)
                     store_user_data(user_id, extracted_data)
                     st.success("Data overwritten successfully in Firebase!")
             else:
