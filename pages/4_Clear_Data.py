@@ -104,16 +104,18 @@ def clear_data_main():
     st.title("Clear Data")
 
     # Display user details
-    st.image(st.session_state['user_info'].get('picture'), width=80)
-    st.write(f"**Hello, {st.session_state['user_info'].get('name')}!**")
-    st.write(f"Your email: **{st.session_state['user_info'].get('email')}**")
+    #st.image(st.session_state['user_info'].get('picture'), width=80)
+    #st.write(f"**Hello, {st.session_state['user_info'].get('name')}!**")
+    #st.write(f"Your email: **{st.session_state['user_info'].get('email')}**")
+    st.write(f"**Logged in as : {st.session_state['user_info'].get('name')}** ({st.session_state['user_info'].get('email')})")
     user_id = st.session_state['oauth_id']
 
     # Fetch user data
     user_data = get_user_data(user_id)
 
     if user_data:
-        st.header("Clear Data Options")
+        #st.subheader("Clear Data Options")
+        st.write("You can delete all your data or data for a specific year or month.")
 
         # Options to delete data
         clear_data_options = ["All Data", "Data for a Specific Year", "Data for a Specific Month"]

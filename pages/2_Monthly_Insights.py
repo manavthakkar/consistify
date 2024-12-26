@@ -246,7 +246,8 @@ def script2_main():
         st.warning("Please log in from the Home page to access this feature.")
         st.stop()
 
-    st.title("Monthly Visualization: Habit Tracker")
+    st.title("Monthly Insights")
+    st.write(f"**Logged in as : {st.session_state['user_info'].get('name')}** ({st.session_state['user_info'].get('email')})")
 
     # Fetch user data dynamically
     def get_user_data(user_id):
@@ -262,9 +263,10 @@ def script2_main():
         return sorted(months, key=lambda x: month_order.index(x))
 
     # Display user details
-    st.image(st.session_state['user_info'].get('picture'), width=80)
-    st.write(f"**Hello, {st.session_state['user_info'].get('name')}!**")
-    st.write(f"Your email: **{st.session_state['user_info'].get('email')}**")
+    #st.image(st.session_state['user_info'].get('picture'), width=80)
+    #st.write(f"**Hello, {st.session_state['user_info'].get('name')}!**")
+    #st.write(f"Your email: **{st.session_state['user_info'].get('email')}**")
+    
     user_id = st.session_state['oauth_id']
 
     # Fetch user data from Firebase
