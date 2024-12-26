@@ -201,26 +201,26 @@ def script1_main():
         st.warning("Please log in from the Home page to access this feature.")
         st.stop()
 
-    st.title("Image Processing: Habit Tracker")
+    st.title("Upload Your Habit Tracker Image")
 
     # Display user details
-    st.image(st.session_state['user_info'].get('picture'), width=80)
-    st.write(f"**Hello, {st.session_state['user_info'].get('name')}!**")
-    st.write(f"Your email: **{st.session_state['user_info'].get('email')}**")
+    #st.image(st.session_state['user_info'].get('picture'), width=80)
+    st.write(f"**Logged in as : {st.session_state['user_info'].get('name')}** ({st.session_state['user_info'].get('email')})")
+    #st.write(f"Your email: **{st.session_state['user_info'].get('email')}**")
     user_id = st.session_state['oauth_id']
 
     # Input for year
-    year = st.number_input("Enter the Year", min_value=1900, max_value=2100, value=2024, step=1)
+    year = st.number_input("Enter the year : ", min_value=2020, max_value=2100, value=2024, step=1)
 
     # File uploader for the image
-    uploaded_file = st.file_uploader("Upload your habit tracker image", type=["jpg", "jpeg", "png"])
+    uploaded_file = st.file_uploader("Upload your habit tracker image :", type=["jpg", "jpeg", "png"])
 
     if uploaded_file:
-        st.write("Processing your image...")
+        #st.write("Processing your image...")
 
         # Slider for percentage threshold
         percentage_threshold = st.slider(
-            "Set the percentage threshold for checkbox detection:",
+            "Move the slider if the detection is incorrect :",
             min_value=0,
             max_value=100,
             value=50,  # Default value
@@ -245,19 +245,21 @@ def script1_main():
             binary_array_trimmed = binary_array[:num_days, :]
 
             # Display the processed results
-            st.subheader("Processed Results")
+            #st.subheader("Processed Results")
             st.image(collage_image_rgb, caption="Processed Image", use_container_width=True)
             st.write(f"**Detected Month:** {month_name}")
-            st.write(f"**Number of Days in {month_name}:** {num_days}")
-            st.write("**Binary Array of Checkbox Values (Trimmed):**")
-            st.write(binary_array_trimmed)
+            #st.write(f"**Number of Days in {month_name}:** {num_days}")
+            #st.write("**Binary Array of Checkbox Values (Trimmed):**")
+            #st.write(binary_array_trimmed)
 
             # Enter habit names
-            st.subheader("Enter Habit Names")
+            st.subheader(f"Enter Habit Names for {month_name}, {year}")
             habit_names = []
             for i in range(binary_array_trimmed.shape[1]):  # Assuming each column corresponds to a habit
                 habit_name = st.text_input(f"Enter name for Habit {i + 1}", value=f"Habit {i + 1}")
-                habit_names.append(habit_name)
+                habit_names.append(habit_name.capitalize())
+
+            st.info("Enter habit names consistently, as in previous months, to ensure accurate yearly insights.")
 
             # Prepare the habit data
             habit_data = {habit_names[i]: binary_array_trimmed[:, i].tolist() for i in range(binary_array_trimmed.shape[1])}
@@ -270,7 +272,7 @@ def script1_main():
             }
 
             # Firebase integration
-            st.subheader("Firebase Integration")
+            st.subheader("Save data to get insights")
             existing_data = get_user_data(user_id, year, month_name)
             if existing_data:
                 st.write("Data already exists for this user, year, and month.")
@@ -278,11 +280,11 @@ def script1_main():
                 if overwrite == "Yes" and st.button("Save Data"):
                     delete_data_for_year_month(user_id, year, month_name)
                     store_user_data(user_id, extracted_data)
-                    st.success("Data overwritten successfully in Firebase!")
+                    st.success("Data overwritten successfully!")
             else:
                 if st.button("Save Data"):
                     store_user_data(user_id, extracted_data)
-                    st.success("Data saved successfully in Firebase!")
+                    st.success("Data saved successfully!")
 
         except Exception as e:
             st.error(f"An error occurred during processing: {e}")
