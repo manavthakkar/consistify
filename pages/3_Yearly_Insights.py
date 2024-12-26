@@ -12,8 +12,9 @@ from PIL import ImageDraw, ImageFont
 st.set_page_config(page_title="Yearly Insights", page_icon="📈")
 
 # Firebase Initialization
+firebase_json = dict(st.secrets["firebase"])
 if not firebase_admin._apps:
-    cred = credentials.Certificate("firebase.json")
+    cred = credentials.Certificate(firebase_json)
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
