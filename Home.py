@@ -3,6 +3,7 @@ from streamlit_google_auth import Authenticate
 import utils
 from PIL import Image
 import json
+from st_social_media_links import SocialMediaIcons
 
 st.set_page_config(page_title="Home", page_icon="🏠", layout="centered")
 
@@ -117,32 +118,25 @@ def home_page():
         # Contact Information
         st.header("Get in Touch 📬")
         st.markdown("""
-        Have questions or feedback? Feel free to reach out to me!
-        - [E-mail](mailto:manavt2000@gmail.com) 
-        - [LinkedIn](https://www.linkedin.com/in/manavt2000) 
+        Have questions or feedback? Feel free to [reach out](mailto:manavt2000@gmail.com) to me!
 
         I'd love to hear from you and help you make the most of Consistify! 🌟
         """)
 
-        # Navigation menu using session state
-        # st.sidebar.title("Navigation")
-        # pages = {
-        #     "Home": "home",
-        #     "Image Processing": "script1",
-        #     "Monthly Visualization": "script2",
-        #     "Yearly Overview": "script3",
-        # }
+        st.divider()
 
-        # # Select the page
-        # selected_page = st.sidebar.selectbox("Choose a page", list(pages.keys()))
-        # st.session_state["selected_page"] = pages[selected_page]
+        social_media_links = [
+        "https://www.linkedin.com/in/manavt2000",
+        "https://github.com/manavthakkar"
+        ]
+
+        social_media_icons = SocialMediaIcons(social_media_links) 
+
+        social_media_icons.render(sidebar=False, justify_content="space-evenly")
 
         # Logout button in the sidebar
         if st.sidebar.button("Log out"):
             authenticator.logout()
-
-        # Inform the user about navigation
-        # st.info(f"Go to the **{selected_page}** page from the sidebar.")
 
     # If not authenticated, show a login prompt
     else:
