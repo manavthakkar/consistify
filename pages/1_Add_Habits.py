@@ -221,12 +221,14 @@ def script1_main():
 
         # Slider for percentage threshold
         percentage_threshold = st.slider(
-            "Move the slider if the detection is incorrect :",
+            "Change the slider value in case of incorrect detection:",
             min_value=0,
             max_value=100,
-            value=50,  # Default value
-            step=1
+            value=50,
+            step=1,
+            help="Increasing the value will reduce the number of detected checkboxes and vice versa."
         )
+
 
         # Convert uploaded file to OpenCV format
         file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
