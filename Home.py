@@ -2,17 +2,35 @@ import streamlit as st
 from streamlit_google_auth import Authenticate
 import utils
 from PIL import Image
+import json
 
 st.set_page_config(page_title="Home", page_icon="🏠", layout="centered")
 
 st.image("assets/consistify-logo-full.png", width=300)
 
+# Dynamically construct the JSON credentials using st.secrets
+google_credentials = {
+    "web": {
+        "client_id": st.secrets["google_auth"]["client_id"],
+        "project_id": st.secrets["google_auth"]["project_id"],
+        "auth_uri": st.secrets["google_auth"]["auth_uri"],
+        "token_uri": st.secrets["google_auth"]["token_uri"],
+        "auth_provider_x509_cert_url": st.secrets["google_auth"]["auth_provider_x509_cert_url"],
+        "client_secret": st.secrets["google_auth"]["client_secret"],
+        "redirect_uris": st.secrets["google_auth"]["redirect_uris"]
+    }
+}
+
+# Write the credentials to a JSON file dynamically
+with open("google_credentials.json", "w") as f:
+    json.dump(google_credentials, f)
+
 # Initialize Google Authentication
 authenticator = Authenticate(
     secret_credentials_path='google_credentials.json', # Path to Google credentials
     cookie_name='auth_cookie',                         # Cookie name for the session
-    cookie_key='this_is_secret',                       # Secret key for the cookie
-    redirect_uri='http://localhost:8501',              # Redirect URI for the Streamlit app
+    cookie_key=st.secrets["auth"]["cookie_key"],                       # Secret key for the cookie
+    redirect_uri=st.secrets["google_auth"]["redirect_uris"][0],              # Redirect URI for the Streamlit app
 )
 
 def home_page():
