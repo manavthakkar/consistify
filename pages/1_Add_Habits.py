@@ -3,56 +3,14 @@ import cv2
 import numpy as np
 import calendar
 import utils
+import firebase_utils as fb_utils
 
 st.set_page_config(page_title="Add Habits", page_icon="📂")
 
 # Initialize Firebase
-db = utils.initialize_firestore()
+db = fb_utils.initialize_firestore()
 
-def delete_data_for_year_month(user_id, year, month):
-    """
-    Deletes data for a specific year and month from a user's document in Firestore.
-    
-    Args:
-        user_id (str): The ID of the user.
-        year (str): The year to delete (e.g., "2020").
-        month (str): The month to delete (e.g., "January").
-    """
-    try:
-        # Reference the Firestore document for the user
-        user_ref = db.collection("users").document(user_id)
-
-        # Build the path to the specific year and month
-        field_path = f"{year}.{month}"
-
-        # Use Firestore's update method with DELETE_FIELD to remove the data
-        from google.cloud.firestore_v1 import DELETE_FIELD
-        user_ref.update({
-            field_path: DELETE_FIELD
-        })
-        
-        print(f"Data for {year}, {month} has been successfully deleted.")
-    except Exception as e:
-        print(f"An error occurred while deleting data: {e}")
-
-def get_user_data(user_id, year, month_name):
-    """
-    Retrieve user data for a specific year and month from Firestore.
-    """
-    doc = db.collection("users").document(user_id).get()
-    if doc.exists:
-        user_data = doc.to_dict()
-        if str(year) in user_data and month_name in user_data[str(year)]:
-            return user_data[str(year)][month_name]
-    return None
-
-def store_user_data(user_id, user_data):
-    """
-    Store user data in Firestore.
-    """
-    db.collection("users").document(user_id).set(user_data, merge=True)
-
-def process_image_and_generate_collage(img, year, percentage_threshold=50):
+def process_image_and_extract_data(img, year, percentage_threshold=50):
     ##################### Constants #####################
     THRESHOLD_ADJUSTMENT = 0          # ± value to adjust the threshold
 
@@ -176,16 +134,7 @@ def process_image_and_generate_collage(img, year, percentage_threshold=50):
     
     return imgFinal, month_name, binary_array
 
-
-def get_days_in_month(year, month_name):
-    """
-    Get the number of days in a month, considering leap years.
-    """
-    month_number = list(calendar.month_name).index(month_name)  # Get the month number
-    _, num_days = calendar.monthrange(year, month_number)
-    return num_days
-
-def script1_main():
+def add_habits_main():
 
     utils.add_side_logo()
     
@@ -228,13 +177,13 @@ def script1_main():
 
         try:
             # Process the image
-            processed_image, month_name, binary_array = process_image_and_generate_collage(img, year, percentage_threshold)
+            processed_image, month_name, binary_array = process_image_and_extract_data(img, year, percentage_threshold)
 
             # Convert BGR to RGB for Streamlit display
             collage_image_rgb = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
 
             # Get the number of days in the detected month
-            num_days = get_days_in_month(year, month_name)
+            num_days = utils.get_days_in_month(year, month_name)
 
             # Trim the binary array to match the number of days in the month
             binary_array_trimmed = binary_array[:num_days, :]
@@ -268,21 +217,21 @@ def script1_main():
 
             # Firebase integration
             st.subheader("Save data to get insights")
-            existing_data = get_user_data(user_id, year, month_name)
+            existing_data = fb_utils.get_user_data(db, user_id, year, month_name)
             if existing_data:
                 st.write("Data already exists for this user, year, and month.")
                 overwrite = st.radio("Do you want to overwrite the existing data?", ("No", "Yes"))
                 if overwrite == "Yes" and st.button("Save Data"):
-                    delete_data_for_year_month(user_id, year, month_name)
-                    store_user_data(user_id, extracted_data)
+                    fb_utils.delete_data_for_year_month(db, user_id, year, month_name)
+                    fb_utils.store_user_data(db, user_id, extracted_data)
                     st.success("Data overwritten successfully!")
             else:
                 if st.button("Save Data"):
-                    store_user_data(user_id, extracted_data)
+                    fb_utils.store_user_data(db, user_id, extracted_data)
                     st.success("Data saved successfully!")
 
         except Exception as e:
             st.error(f"An error occurred during processing: {e}")
 
 if __name__ == "__main__":
-    script1_main()
+    add_habits_main()

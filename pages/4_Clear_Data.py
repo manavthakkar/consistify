@@ -3,11 +3,12 @@ from firebase_admin import credentials, firestore
 import firebase_admin
 import calendar
 import utils
+import firebase_utils as fb_utils
 
 st.set_page_config(page_title="Clear Data", page_icon="🗑️")
 
 # Initialize Firebase 
-db = utils.initialize_firestore()
+db = fb_utils.initialize_firestore()
 
 def get_user_data(user_id):
     """

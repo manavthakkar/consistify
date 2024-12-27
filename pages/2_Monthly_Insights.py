@@ -6,11 +6,12 @@ import cv2
 import numpy as np
 from PIL import ImageDraw, ImageFont
 import utils
+import firebase_utils as fbutils
 
 st.set_page_config(page_title="Monthly Insights", page_icon="📅")
 
 # Initialize Firebase
-db = utils.initialize_firestore()
+db = fbutils.initialize_firestore()
 
 def add_text_to_image(image, text, font_path, size, position, color):
     # Convert the image from OpenCV (BGR) to PIL (RGB) format
@@ -254,11 +255,6 @@ def script2_main():
     def sort_months_chronologically(months):
         month_order = list(calendar.month_name)[1:]  # Skip the empty string at index 0
         return sorted(months, key=lambda x: month_order.index(x))
-
-    # Display user details
-    #st.image(st.session_state['user_info'].get('picture'), width=80)
-    #st.write(f"**Hello, {st.session_state['user_info'].get('name')}!**")
-    #st.write(f"Your email: **{st.session_state['user_info'].get('email')}**")
     
     user_id = st.session_state['oauth_id']
 
