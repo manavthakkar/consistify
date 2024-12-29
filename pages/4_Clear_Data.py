@@ -10,31 +10,31 @@ st.set_page_config(page_title="Clear Data", page_icon="🗑️")
 # Initialize Firebase 
 db = fb_utils.initialize_firestore()
 
-def get_user_data(user_id):
+def get_user_data(user_email):
     """
     Fetches the user's data from Firestore.
     
     Args:
-        user_id (str): The user ID.
+        user_email (str): The user email.
     
     Returns:
         dict: The user's data or None if not found.
     """
-    doc = db.collection("users").document(user_id).get()
+    doc = db.collection("users").document(user_email).get()
     return doc.to_dict() if doc.exists else None
 
-def delete_data_for_year_month(user_id, year, month):
+def delete_data_for_year_month(user_email, year, month):
     """
     Deletes data for a specific year and month from a user's document in Firestore.
     
     Args:
-        user_id (str): The ID of the user.
+        user_email (str): The email of the user.
         year (str): The year to delete (e.g., "2020").
         month (str): The month to delete (e.g., "January").
     """
     try:
         # Reference the Firestore document for the user
-        user_ref = db.collection("users").document(user_id)
+        user_ref = db.collection("users").document(user_email)
 
         # Build the path to the specific year and month
         field_path = f"{year}.{month}"
@@ -49,17 +49,17 @@ def delete_data_for_year_month(user_id, year, month):
     except Exception as e:
         print(f"An error occurred while deleting data: {e}")
 
-def delete_data_for_year(user_id, year):
+def delete_data_for_year(user_email, year):
     """
     Deletes all data for a specific year from a user's document in Firestore.
     
     Args:
-        user_id (str): The ID of the user.
+        user_email (str): The ID of the user.
         year (str): The year to delete (e.g., "2020").
     """
     try:
         # Reference the Firestore document for the user
-        user_ref = db.collection("users").document(user_id)
+        user_ref = db.collection("users").document(user_email)
 
         # Use Firestore's update method with DELETE_FIELD to remove the year data
         from google.cloud.firestore_v1 import DELETE_FIELD
@@ -67,34 +67,34 @@ def delete_data_for_year(user_id, year):
             year: DELETE_FIELD
         })
         
-        print(f"Data for {year} has been successfully deleted for user {user_id}.")
+        print(f"Data for {year} has been successfully deleted for user {user_email}.")
     except Exception as e:
         print(f"An error occurred while deleting data: {e}")
 
-def delete_all_user_data(user_id):
+def delete_all_user_data(user_email):
     """
     Deletes all data for a specific user from their Firestore document.
     
     Args:
-        user_id (str): The ID of the user.
+        user_email (str): The email of the user.
     """
     try:
         # Reference the Firestore document for the user
-        user_ref = db.collection("users").document(user_id)
+        user_ref = db.collection("users").document(user_email)
 
         # Delete the entire document
         user_ref.delete()
         
-        print(f"All data for user {user_id} has been successfully deleted.")
+        print(f"All data for user {user_email} has been successfully deleted.")
     except Exception as e:
-        print(f"An error occurred while deleting all data for user {user_id}: {e}")
+        print(f"An error occurred while deleting all data for user {user_email}: {e}")
 
 def clear_data_main():
 
     utils.add_side_logo()
 
     # Check if the user is authenticated
-    if not st.session_state.get('connected', False):
+    if 'user_info' not in st.session_state:
         st.warning("Please log in from the Home page to access this feature.")
         st.stop()
 
@@ -104,11 +104,11 @@ def clear_data_main():
     #st.image(st.session_state['user_info'].get('picture'), width=80)
     #st.write(f"**Hello, {st.session_state['user_info'].get('name')}!**")
     #st.write(f"Your email: **{st.session_state['user_info'].get('email')}**")
-    st.write(f"**Logged in as : {st.session_state['user_info'].get('name')}** ({st.session_state['user_info'].get('email')})")
-    user_id = st.session_state['oauth_id']
+    st.write(f"**Logged in as :** {st.session_state['user_info'].get('email')}")
+    user_email = st.session_state['user_info'].get('email')
 
     # Fetch user data
-    user_data = get_user_data(user_id)
+    user_data = get_user_data(user_email)
 
     if user_data:
         #st.subheader("Clear Data Options")
@@ -123,7 +123,7 @@ def clear_data_main():
             if st.button("Delete All Data"):
                 try:
                     # Call function to delete all data for the user
-                    delete_all_user_data(user_id)
+                    delete_all_user_data(user_email)
                     st.success("All data has been successfully deleted.")
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
@@ -136,7 +136,7 @@ def clear_data_main():
             if st.button(f"Delete Data for {selected_year}"):
                 try:
                     # Call function to delete data for the specific year
-                    delete_data_for_year(user_id, selected_year)
+                    delete_data_for_year(user_email, selected_year)
                     st.success(f"Data for {selected_year} has been successfully deleted.")
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
@@ -153,7 +153,7 @@ def clear_data_main():
                 if st.button(f"Delete Data for {selected_month} {selected_year}"):
                     try:
                         # Call function to delete data for the specific year and month
-                        delete_data_for_year_month(user_id, selected_year, selected_month)
+                        delete_data_for_year_month(user_email, selected_year, selected_month)
                         st.success(f"Data for {selected_month} {selected_year} has been successfully deleted.")
                     except Exception as e:
                         st.error(f"An error occurred: {e}")

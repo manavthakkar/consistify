@@ -7,6 +7,7 @@ import cv2
 import calendar
 from PIL import ImageDraw, ImageFont
 import firebase_utils as fb_utils
+import auth_functions
 
 st.set_page_config(page_title="Yearly Insights", page_icon="📈")
 
@@ -311,12 +312,12 @@ def longest_habit_streak_across_year(data, year, habit_name):
     
     return longest_streak
 
-def script3_main():
+def yearly_insights_main():
     
     utils.add_side_logo()
     
     # Check if the user is authenticated
-    if not st.session_state.get('connected', False):
+    if 'user_info' not in st.session_state:
         st.warning("Please log in from the Home page to access this feature.")
         st.stop()
 
@@ -326,19 +327,24 @@ def script3_main():
     #st.image(st.session_state['user_info'].get('picture'), width=80)
     #st.write(f"**Hello, {st.session_state['user_info'].get('name')}!**")
     #st.write(f"Your email: **{st.session_state['user_info'].get('email')}**")
-    st.write(f"**Logged in as : {st.session_state['user_info'].get('name')}** ({st.session_state['user_info'].get('email')})")
-    user_id = st.session_state['oauth_id']
+    st.write(f"**Logged in as :** {st.session_state['user_info'].get('email')}")
+
+    if st.sidebar.button("Log out"):
+        auth_functions.sign_out()
+        st.experimental_rerun()
+
+    user_email = st.session_state['user_info']['email']
 
     # Fetch user data dynamically
-    def get_user_data(user_id):
-        doc = db.collection("users").document(user_id).get()
+    def get_user_data(user_email):
+        doc = db.collection("users").document(user_email).get()
         if doc.exists:
             return doc.to_dict()
         else:
             return None
 
     # Fetch user data from Firebase
-    user_data = get_user_data(user_id)
+    user_data = get_user_data(user_email)
 
     if user_data:
         # Extract available years and allow selection
@@ -391,7 +397,7 @@ def script3_main():
             except Exception as e:
                 st.error(f"An error occurred: {e}")
     else:
-        st.error("No data found for your user ID.")
+        st.error("No data found.")
 
 if __name__ == "__main__":
-    script3_main()
+    yearly_insights_main()

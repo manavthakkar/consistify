@@ -4,6 +4,7 @@ import numpy as np
 import calendar
 import utils
 import firebase_utils as fb_utils
+import auth_functions
 
 st.set_page_config(page_title="Add Habits", page_icon="📂")
 
@@ -139,28 +140,25 @@ def add_habits_main():
     utils.add_side_logo()
     
     # Check if the user is authenticated
-    if not st.session_state.get('connected', False):
+    if 'user_info' not in st.session_state:
         st.warning("Please log in from the Home page to access this feature.")
         st.stop()
 
+    if st.sidebar.button("Log out"):
+        auth_functions.sign_out()
+        st.rerun()
+
     st.title("Upload Your Habit Tracker Image")
+    st.write(f"**Logged in as :** {st.session_state['user_info'].get('email')}")
 
-    # Display user details
-    #st.image(st.session_state['user_info'].get('picture'), width=80)
-    st.write(f"**Logged in as : {st.session_state['user_info'].get('name')}** ({st.session_state['user_info'].get('email')})")
-    #st.write(f"Your email: **{st.session_state['user_info'].get('email')}**")
-    user_id = st.session_state['oauth_id']
+    user_email = st.session_state['user_info']['email']
 
-    # Input for year
     year = st.number_input("Enter the year : ", min_value=2020, max_value=2100, value=2024, step=1)
 
-    # File uploader for the image
     uploaded_file = st.file_uploader("Upload your habit tracker image :", type=["jpg", "jpeg", "png"])
 
     if uploaded_file:
-        #st.write("Processing your image...")
 
-        # Slider for percentage threshold
         percentage_threshold = st.slider(
             "Change the slider value in case of incorrect detection:",
             min_value=0,
@@ -176,7 +174,6 @@ def add_habits_main():
         img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
 
         try:
-            # Process the image
             processed_image, month_name, binary_array = process_image_and_extract_data(img, year, percentage_threshold)
 
             # Convert BGR to RGB for Streamlit display
@@ -189,12 +186,8 @@ def add_habits_main():
             binary_array_trimmed = binary_array[:num_days, :]
 
             # Display the processed results
-            #st.subheader("Processed Results")
             st.image(collage_image_rgb, caption="Processed Image", use_container_width=True)
             st.write(f"**Detected Month:** {month_name}")
-            #st.write(f"**Number of Days in {month_name}:** {num_days}")
-            #st.write("**Binary Array of Checkbox Values (Trimmed):**")
-            #st.write(binary_array_trimmed)
 
             # Enter habit names
             st.subheader(f"Enter Habit Names for {month_name}, {year}")
@@ -205,7 +198,6 @@ def add_habits_main():
 
             st.info("Enter habit names consistently, as in previous months, to ensure accurate yearly insights.")
 
-            # Prepare the habit data
             habit_data = {habit_names[i]: binary_array_trimmed[:, i].tolist() for i in range(binary_array_trimmed.shape[1])}
 
             # Prepare data to store in Firebase
@@ -217,17 +209,17 @@ def add_habits_main():
 
             # Firebase integration
             st.subheader("Save data to get insights")
-            existing_data = fb_utils.get_user_data(db, user_id, year, month_name)
+            existing_data = fb_utils.get_user_data(db, user_email, year, month_name)
             if existing_data:
                 st.write("Data already exists for this user, year, and month.")
                 overwrite = st.radio("Do you want to overwrite the existing data?", ("No", "Yes"))
                 if overwrite == "Yes" and st.button("Save Data"):
-                    fb_utils.delete_data_for_year_month(db, user_id, year, month_name)
-                    fb_utils.store_user_data(db, user_id, extracted_data)
+                    fb_utils.delete_data_for_year_month(db, user_email, year, month_name)
+                    fb_utils.store_user_data(db, user_email, extracted_data)
                     st.success("Data overwritten successfully!")
             else:
                 if st.button("Save Data"):
-                    fb_utils.store_user_data(db, user_id, extracted_data)
+                    fb_utils.store_user_data(db, user_email, extracted_data)
                     st.success("Data saved successfully!")
 
         except Exception as e:

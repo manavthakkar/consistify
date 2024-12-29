@@ -7,6 +7,7 @@ import numpy as np
 from PIL import ImageDraw, ImageFont
 import utils
 import firebase_utils as fbutils
+import auth_functions
 
 st.set_page_config(page_title="Monthly Insights", page_icon="📅")
 
@@ -231,21 +232,25 @@ def get_month_number(month_name):
     except ValueError:
         return "Invalid month name"
 
-def script2_main():
+def monthly_insights_main():
 
     utils.add_side_logo()
 
     # Check if the user is authenticated
-    if not st.session_state.get('connected', False):
+    if 'user_info' not in st.session_state:
         st.warning("Please log in from the Home page to access this feature.")
         st.stop()
 
     st.title("Monthly Insights")
-    st.write(f"**Logged in as : {st.session_state['user_info'].get('name')}** ({st.session_state['user_info'].get('email')})")
+    st.write(f"**Logged in as :** {st.session_state['user_info'].get('email')}")
+
+    if st.sidebar.button("Log out"):
+        auth_functions.sign_out()
+        st.rerun()
 
     # Fetch user data dynamically
-    def get_user_data(user_id):
-        doc = db.collection("users").document(user_id).get()
+    def get_user_data(user_email):
+        doc = db.collection("users").document(user_email).get()
         if doc.exists:
             return doc.to_dict()
         else:
@@ -256,10 +261,10 @@ def script2_main():
         month_order = list(calendar.month_name)[1:]  # Skip the empty string at index 0
         return sorted(months, key=lambda x: month_order.index(x))
     
-    user_id = st.session_state['oauth_id']
+    user_email = st.session_state['user_info']['email']
 
     # Fetch user data from Firebase
-    user_data = get_user_data(user_id)
+    user_data = get_user_data(user_email)
 
     if user_data:
         # Extract available years and allow selection
@@ -316,7 +321,7 @@ def script2_main():
                 st.error(f"An error occurred: {e}")
 
     else:
-        st.error("No data found for your user ID.")
+        st.error("No data found.")
 
 if __name__ == "__main__":
-    script2_main()
+    monthly_insights_main()

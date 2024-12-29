@@ -10,12 +10,12 @@ if not firebase_admin._apps:
 db = firestore.client()
 
 # Function to store user data in Firestore
-def store_user_data(user_id, user_data):
+def store_user_data(user_email, user_data):
     # Reference the user's collection
-    db.collection("users").document(user_id).set(user_data, merge=True)
+    db.collection("users").document(user_email).set(user_data, merge=True)
 
 
-user_id = "103259091715733095383" # will be obtained from Google Authentication
+user_email = "manavt2000@gmail.com"
 user_data = {
 "2020": {
     "January": {
@@ -47,7 +47,7 @@ user_data = {
 
 }
 
-store_user_data(user_id, user_data)
+store_user_data(user_email, user_data)
 
 
 

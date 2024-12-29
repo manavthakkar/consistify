@@ -1,58 +1,50 @@
 import streamlit as st
-from streamlit_google_auth import Authenticate
 import utils
 from PIL import Image
 import json
 from st_social_media_links import SocialMediaIcons
+import auth_functions
 
 st.set_page_config(page_title="Home", page_icon="🏠", layout="centered")
 
 st.image("assets/consistify-logo-full.png", width=300)
 
-# Dynamically construct the JSON credentials using st.secrets
-google_credentials = {
-    "web": {
-        "client_id": st.secrets["google_auth"]["client_id"],
-        "project_id": st.secrets["google_auth"]["project_id"],
-        "auth_uri": st.secrets["google_auth"]["auth_uri"],
-        "token_uri": st.secrets["google_auth"]["token_uri"],
-        "auth_provider_x509_cert_url": st.secrets["google_auth"]["auth_provider_x509_cert_url"],
-        "client_secret": st.secrets["google_auth"]["client_secret"],
-        "redirect_uris": st.secrets["google_auth"]["redirect_uris"]
-    }
-}
-
-# Write the credentials to a JSON file dynamically
-with open("google_credentials.json", "w") as f:
-    json.dump(google_credentials, f)
-
-# Initialize Google Authentication
-authenticator = Authenticate(
-    secret_credentials_path='google_credentials.json', # Path to Google credentials
-    cookie_name='auth_cookie',                         # Cookie name for the session
-    cookie_key=st.secrets["auth"]["cookie_key"],                       # Secret key for the cookie
-    redirect_uri=st.secrets["google_auth"]["redirect_uris"][0],              # Redirect URI for the Streamlit app
-)
-
 def home_page():
     st.title("Welcome to Consistify!")
-
-    # Check authentication status
-    authenticator.check_authentification()
-
-    # Login or Logout button
-    authenticator.login()
+    st.write("")
 
     # Display the Consistify logo
     utils.add_side_logo()
 
     # If the user is authenticated, display navigation and user details
-    if st.session_state.get('connected', False):
-        st.subheader(f"Hello, {st.session_state['user_info'].get('name').split()[0]}! 👋")
-        #st.image(st.session_state['user_info'].get('picture'), width=80)
-        #st.write(f"**Hello, {st.session_state['user_info'].get('name')}!**")
-        #st.write(f"Logged in as: **{st.session_state['user_info'].get('email')}**")
+    if 'user_info' not in st.session_state:
+        col1, col2, col3 = st.columns([1, 2, 1])
+        do_you_have_an_account = col2.selectbox(label='Do you have an account?', options=('Yes', 'No', 'I forgot my password'))
+        auth_form = col2.form(key='Authentication form', clear_on_submit=False)
+        email = auth_form.text_input(label='Email')
+        password = auth_form.text_input(label='Password', type='password') if do_you_have_an_account in {'Yes', 'No'} else auth_form.empty()
+        auth_notification = col2.empty()
 
+        if do_you_have_an_account == 'Yes' and auth_form.form_submit_button(label='Sign In', use_container_width=True, type='primary'):
+            with auth_notification, st.spinner('Signing in'):
+                auth_functions.sign_in(email, password)
+            
+        elif do_you_have_an_account == 'No' and auth_form.form_submit_button(label='Create Account', use_container_width=True, type='primary'):
+            with auth_notification, st.spinner('Creating account'):
+                auth_functions.create_account(email, password)
+        
+        elif do_you_have_an_account == 'I forgot my password' and auth_form.form_submit_button(label='Send Password Reset Email', use_container_width=True, type='primary'):
+            with auth_notification, st.spinner('Sending password reset link'):
+                auth_functions.reset_password(email)
+
+        if 'auth_success' in st.session_state:
+            auth_notification.success(st.session_state.auth_success)
+            del st.session_state.auth_success
+        elif 'auth_warning' in st.session_state:
+            auth_notification.warning(st.session_state.auth_warning)
+            del st.session_state.auth_warning
+
+    else:
         st.markdown("""
             **Consistify** is your go-to solution for effortless habit tracking, helping you stay consistent and focused. Consistify makes the process simple and effective! 🏆
 
@@ -109,11 +101,16 @@ def home_page():
         # Privacy Policy
         st.header("Privacy Policy 🛡️")
         st.markdown("""
-        At Consistify, your privacy is our priority. Here’s how we keep your data safe:
-        - **Cloud Storage** ☁️: Your habit data is securely stored in the cloud for easy access anytime.
-        - **Anonymous Identification** 🆔: Users are identified by a unique user ID, ensuring complete anonymity.
-        - **Your Choice** 🗑️: You can delete any or all of your data (monthly, yearly, or lifetime) whenever you want.
+        At **Consistify**, your privacy is our priority. We adhere to the following principles:
+
+        - **Data Collection**: We only collect essential data, such as your email for authentication and habit data for generating personalized insights.
+        - **Data Usage**: Your data is never shared and is used solely for providing habit-tracking analysis.
+        - **Sensitive Information**: Passwords are securely handled by Firebase Authentication and are never stored by us.
+        - **User Control**: You have full control over your data and can delete specific months, years, or all your data at any time.
+        - **Data Security**: All data exchanges are encrypted, and your habit data is securely stored in Firebase Firestore.
+
         """)
+
 
         # Contact Information
         st.header("Get in Touch 📬")
@@ -136,11 +133,8 @@ def home_page():
 
         # Logout button in the sidebar
         if st.sidebar.button("Log out"):
-            authenticator.logout()
-
-    # If not authenticated, show a login prompt
-    else:
-        st.info("Please log in using the button above to get started.")
+            auth_functions.sign_out()
+            st.rerun()
 
 if __name__ == "__main__":
     home_page()
