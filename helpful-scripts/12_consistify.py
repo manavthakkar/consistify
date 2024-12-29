@@ -1,18 +1,19 @@
-"""
-This script can help to understand the process of detecting checkboxes in an image and marking them as checked or unchecked.
+"""This script can help to understand the process of detecting checkboxes in an image and marking them as checked or unchecked.
 This is v0, lot has changed in the final version.
 """
+import calendar
+
 import cv2
 import numpy as np
+
 import utils
-import calendar
 
 ##################### Constants #####################
 habits = 6
 threshold = 900                    # Threshold for checking if a box is marked or not
 year = 2024
 
-img_path = 'assets/x2.jpeg'
+img_path = "assets/x2.jpeg"
 
 # Load the image
 img = cv2.imread(img_path)
@@ -35,14 +36,14 @@ imgBlur = cv2.GaussianBlur(imgGray, (5, 5), 1)
 
 # Apply Canny edge detection
 imgCanny = cv2.Canny(imgBlur, 10, 50)
-cv2.imshow('Canny Image', imgCanny)
+cv2.imshow("Canny Image", imgCanny)
 
 # Find the contours in the image
 contours, hierarchy = cv2.findContours(imgCanny, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
 # Draw the contours
 cv2.drawContours(imgContours, contours, -1, (0, 255, 0), 3)
-cv2.imshow('Contours Image', imgContours)
+cv2.imshow("Contours Image", imgContours)
 
 # Get the rectangle contours
 rectCon = utils.rectContour(contours)
@@ -84,18 +85,18 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     ptT2 = np.float32([[0, 0], [monthImgWidth, 0], [0, monthImgHeight], [monthImgWidth, monthImgHeight]])
     matrixT = cv2.getPerspectiveTransform(ptT1, ptT2)
     imgWarpColoredT = cv2.warpPerspective(img, matrixT, (monthImgWidth, monthImgHeight))
-    cv2.imshow('Warped Image Third', imgWarpColoredT)
+    cv2.imshow("Warped Image Third", imgWarpColoredT)
 
     ##################### Processing the checkbox area #####################
 
     # Convert the warped image of the biggest rect contour to grayscale and apply thresholding
     imgWarpGray = cv2.cvtColor(imgWarpColored, cv2.COLOR_BGR2GRAY)
     imgThresh = cv2.threshold(imgWarpGray, 150, 255, cv2.THRESH_BINARY_INV)[1]
-    cv2.imshow('Thresh Image', imgThresh)
+    cv2.imshow("Thresh Image", imgThresh)
 
-    # Get the boxes from the biggest rect contour warped image 
+    # Get the boxes from the biggest rect contour warped image
     boxes = utils.splitBoxes(imgThresh, 31, 6)     # 31 rows and 6 columns
-    cv2.imshow('Boxes Image', boxes[2])   # Display the third box
+    cv2.imshow("Boxes Image", boxes[2])   # Display the third box
     #print("Total boxes:" , len(boxes))                   # 186 boxes (31x6)
     #print("Size of each box: ", boxes[0].shape)               # (18, 89)         i.e. 18 x 31 = 558 and 89 x 6 = 534
 
@@ -121,17 +122,17 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     # Display the marked boxes
     imgMarked = imgWarpColored.copy()
     imgMarked = utils.draw_circles_on_image(imgMarked, binary_array)
-    cv2.imshow('Marked Image', imgMarked)
+    cv2.imshow("Marked Image", imgMarked)
 
     # Create a black image of same shape of imgWarpColored to display circles
     imgRawCircles = np.zeros_like(imgWarpColored)
     imgRawCircles = utils.draw_circles_on_image(imgRawCircles, binary_array)
-    cv2.imshow('Raw Circles Image', imgRawCircles)
+    cv2.imshow("Raw Circles Image", imgRawCircles)
 
     # Inverse warp the raw circles image (This will be a black image with circles)
     invMatrix = cv2.getPerspectiveTransform(pt2, pt1)
     imgInvWarp = cv2.warpPerspective(imgRawCircles, invMatrix, (img.shape[1], img.shape[0])) # img.shape[1] = width, img.shape[0] = height
-    cv2.imshow('Inverse Warped Circle Image', imgInvWarp)
+    cv2.imshow("Inverse Warped Circle Image", imgInvWarp)
 
     # Add the inverse warped image to the original image (another way to overlay the images)
     #imgFinal = cv2.addWeighted(img, 1, imgInvWarp, 1.5, 10)
@@ -151,7 +152,7 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
 
     # Get the boxes from the third biggest rect contour warped image
     month_boxes = utils.splitBoxes(imgThreshT, 4, 4)           # 4 rows and 4 columns
-    cv2.imshow('Month Boxes Image', month_boxes[4])          # Display 5th box - Jan box
+    cv2.imshow("Month Boxes Image", month_boxes[4])          # Display 5th box - Jan box
     # print(len(month_boxes))                                  # 12 boxes (4x4)
     print(month_boxes[0].shape)                              # (26, 60)         i.e. 26 x 4 = 104 and 60 x 4 = 240
 
@@ -166,9 +167,9 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
         if countC == 4:
             countR += 1
             countC = 0
-    print(monthPixelVal) 
+    print(monthPixelVal)
 
-    # Remove the first row 
+    # Remove the first row
     monthPixelVal = monthPixelVal[1:]
 
     #Determine the month with the highest value
@@ -200,12 +201,12 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
     longest_streak = utils.get_longest_streak(binary_array)
     print("Longest streak of consecutive days:", longest_streak)
     imgStats = utils.apply_stats_to_image(imgRawStats, longest_streak, "day streak", -0.2) # -0.2 is the vertical adjustment factor
-    cv2.imshow('Stats Image', imgStats)
+    cv2.imshow("Stats Image", imgStats)
 
     # Inverse warp the stats image
     invMatrixS = cv2.getPerspectiveTransform(ptS2, ptS1)
     imgInvWarpStats = cv2.warpPerspective(imgRawStats, invMatrixS, (img.shape[1], img.shape[0]))
-    cv2.imshow('Inverse Warped Stats Image', imgInvWarpStats)
+    cv2.imshow("Inverse Warped Stats Image", imgInvWarpStats)
 
     # Overlay the stats image on the original image
     maskStats = np.any(imgInvWarpStats != 0, axis=-1)
@@ -213,14 +214,14 @@ if biggest_rectCon.size != 0 and second_biggest_rectCon.size != 0 and third_bigg
 
     # Create a collage of the original image and the final image
     collage = utils.create_collage(img, imgFinal, scale=0.8)
-    
 
-cv2.imshow('Original Image', img)
+
+cv2.imshow("Original Image", img)
 # cv2.imshow('Gray Image', imgGray)
 # cv2.imshow('Blur Image', imgBlur)
 # cv2.imshow('Canny Image', imgCanny)
-cv2.imshow('Contours Image', imgContours)
-cv2.imshow('Final Image', imgFinal)
-cv2.imshow('Collage', collage)
+cv2.imshow("Contours Image", imgContours)
+cv2.imshow("Final Image", imgFinal)
+cv2.imshow("Collage", collage)
 
 cv2.waitKey(0)

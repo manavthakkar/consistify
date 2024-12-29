@@ -14,9 +14,8 @@ def get_user_data(user_id):
     doc = db.collection("users").document(user_id).get()
     if doc.exists:
         return doc.to_dict()
-    else:
-        return None
-    
+    return None
+
 user_id = "123456789" # will be obtained from Google Authentication
 
 # retrieve all data from the user_id

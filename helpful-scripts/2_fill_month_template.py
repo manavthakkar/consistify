@@ -1,7 +1,9 @@
-from PIL import Image, ImageDraw, ImageFont
+import calendar
+
 import cv2
 import numpy as np
-import calendar
+from PIL import Image, ImageDraw, ImageFont
+
 
 def add_text_to_image(image, text, font_path, size, position, color):
     # Convert the image from OpenCV (BGR) to PIL (RGB) format
@@ -54,7 +56,7 @@ def draw_circles_on_image(image, circle_array):
             col = idx % 7
             center_coordinates = (
                 start_x + col * center_to_center_distance_x,
-                start_y + row * center_to_center_distance_y
+                start_y + row * center_to_center_distance_y,
             )
             cv2.circle(image, center_coordinates, radius, color, thickness)
 
@@ -62,14 +64,14 @@ def draw_circles_on_image(image, circle_array):
     return image
 
 def longest_streak(arr):
-    """
-    Finds the longest streak of consecutive 1's in a binary array.
+    """Finds the longest streak of consecutive 1's in a binary array.
 
     Args:
     arr (list): A binary list containing only 0s and 1s.
 
     Returns:
     int: The length of the longest streak of 1's.
+
     """
     max_streak = 0
     current_streak = 0
@@ -92,12 +94,12 @@ def fill_month_template(month, year, habit_name, total_days, habit_array):
 
     # Load the month template image
     month_images = {
-    28: 'assets/28-month-1.png',
-    29: 'assets/29-month-1.png',
-    30: 'assets/30-month-1.png',
-    31: 'assets/31-month-1.png'}
+    28: "assets/28-month-1.png",
+    29: "assets/29-month-1.png",
+    30: "assets/30-month-1.png",
+    31: "assets/31-month-1.png"}
 
-    image = cv2.imread(month_images.get(days_in_month, 'assets/31-month.png'))
+    image = cv2.imread(month_images.get(days_in_month, "assets/31-month.png"))
 
     # Limit the circle array to the number of days in the month
     habit_array = habit_array[:days_in_month]
@@ -111,33 +113,33 @@ def fill_month_template(month, year, habit_name, total_days, habit_array):
     success_rate = int(days_habit_performed / days_in_month * 100)
 
     # Add text to the image
-    image = add_text_to_image(image, heading, 'assets/Rubik-SemiBold.ttf', 48, (29, 16), (255, 255, 255))
-    image = add_text_to_image(image, habit_name, 'assets/Rubik-Regular.ttf', 32, (29, 82), (148, 168, 254))
+    image = add_text_to_image(image, heading, "assets/Rubik-SemiBold.ttf", 48, (29, 16), (255, 255, 255))
+    image = add_text_to_image(image, habit_name, "assets/Rubik-Regular.ttf", 32, (29, 82), (148, 168, 254))
 
     # Adjust the position of the text based on the number of digits
     if days_habit_performed < 10:
-        image = add_text_to_image(image, str(days_habit_performed), 'assets/Rubik-SemiBold.ttf', 36, (123, 590), (148, 168, 254))
+        image = add_text_to_image(image, str(days_habit_performed), "assets/Rubik-SemiBold.ttf", 36, (123, 590), (148, 168, 254))
     else:
-        image = add_text_to_image(image, str(days_habit_performed), 'assets/Rubik-SemiBold.ttf', 36, (106, 590), (148, 168, 254))
+        image = add_text_to_image(image, str(days_habit_performed), "assets/Rubik-SemiBold.ttf", 36, (106, 590), (148, 168, 254))
 
     if habit_streak < 10:
-        image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-Bold.ttf', 24, (444, 686), (77, 87, 200))
+        image = add_text_to_image(image, str(habit_streak), "assets/Rubik-Bold.ttf", 24, (444, 686), (77, 87, 200))
     else:
-        image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-Bold.ttf', 24, (430, 686), (77, 87, 200))
+        image = add_text_to_image(image, str(habit_streak), "assets/Rubik-Bold.ttf", 24, (430, 686), (77, 87, 200))
 
     if total_days < 10:
-        image = add_text_to_image(image, str(total_days), 'assets/Rubik-Bold.ttf', 24, (444, 776), (77, 87, 200))
+        image = add_text_to_image(image, str(total_days), "assets/Rubik-Bold.ttf", 24, (444, 776), (77, 87, 200))
     elif total_days < 100:
-        image = add_text_to_image(image, str(total_days), 'assets/Rubik-Bold.ttf', 24, (430, 776), (77, 87, 200))
+        image = add_text_to_image(image, str(total_days), "assets/Rubik-Bold.ttf", 24, (430, 776), (77, 87, 200))
     else:
-        image = add_text_to_image(image, str(total_days), 'assets/Rubik-Bold.ttf', 24, (416, 776), (77, 87, 200))
+        image = add_text_to_image(image, str(total_days), "assets/Rubik-Bold.ttf", 24, (416, 776), (77, 87, 200))
 
     if success_rate < 10:
-        image = add_text_to_image(image, str(success_rate) + " %", 'assets/Rubik-Bold.ttf', 36, (424, 515), (154, 162, 253))
+        image = add_text_to_image(image, str(success_rate) + " %", "assets/Rubik-Bold.ttf", 36, (424, 515), (154, 162, 253))
     elif success_rate < 100:
-        image = add_text_to_image(image, str(success_rate) + " %", 'assets/Rubik-Bold.ttf', 36, (416, 515), (154, 162, 253))
+        image = add_text_to_image(image, str(success_rate) + " %", "assets/Rubik-Bold.ttf", 36, (416, 515), (154, 162, 253))
     else:
-        image = add_text_to_image(image, str(success_rate) + " ", 'assets/Rubik-Bold.ttf', 36, (420, 515), (154, 162, 253))
+        image = add_text_to_image(image, str(success_rate) + " ", "assets/Rubik-Bold.ttf", 36, (420, 515), (154, 162, 253))
 
 
     # Draw circular progress bar on the image
@@ -163,7 +165,7 @@ if __name__ == "__main__":
         1, 1, 1, 1, 1, 1, 0,
         1, 1, 1, 1, 1, 1, 1,
         1, 1, 0, 1, 1, 0, 0,
-        1, 0, 1
+        1, 0, 1,
     ]
 
 
@@ -171,6 +173,6 @@ if __name__ == "__main__":
     filled_image = fill_month_template(month, year, habit_name, total_days, circle_array)
 
     # Display the image using OpenCV
-    cv2.imshow(f'{month} / {year}', filled_image)
+    cv2.imshow(f"{month} / {year}", filled_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()

@@ -1,7 +1,10 @@
+import calendar
+
 import cv2
 import numpy as np
+
 import utils
-import calendar
+
 
 def process_image_and_generate_collage(img, year, percentage_threshold=50):
     ##################### Constants #####################
@@ -124,10 +127,10 @@ def process_image_and_generate_collage(img, year, percentage_threshold=50):
 
     ##################### Final Visualization #####################
     #collage = utils.create_collage(img, imgFinal, scale=0.3)
-    
+
     return imgFinal, month_name, binary_array
 
-img_path = 'assets/x7.jpeg'
+img_path = "assets/x7.jpeg"
 year = 2024
 
 img = cv2.imread(img_path)

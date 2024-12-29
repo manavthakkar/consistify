@@ -9,13 +9,13 @@ if not firebase_admin._apps:
 db = firestore.client()
 
 def delete_data_for_year_month(user_id, year, month):
-    """
-    Deletes data for a specific year and month from a user's document in Firestore.
+    """Deletes data for a specific year and month from a user's document in Firestore.
     
     Args:
         user_id (str): The ID of the user.
         year (str): The year to delete (e.g., "2020").
         month (str): The month to delete (e.g., "January").
+
     """
     try:
         # Reference the Firestore document for the user
@@ -27,20 +27,20 @@ def delete_data_for_year_month(user_id, year, month):
         # Use Firestore's update method with DELETE_FIELD to remove the data
         from google.cloud.firestore_v1 import DELETE_FIELD
         user_ref.update({
-            field_path: DELETE_FIELD
+            field_path: DELETE_FIELD,
         })
-        
+
         print(f"Data for {year}, {month} has been successfully deleted for user {user_id}.")
     except Exception as e:
         print(f"An error occurred while deleting data: {e}")
 
 def delete_data_for_year(user_id, year):
-    """
-    Deletes all data for a specific year from a user's document in Firestore.
+    """Deletes all data for a specific year from a user's document in Firestore.
     
     Args:
         user_id (str): The ID of the user.
         year (str): The year to delete (e.g., "2020").
+
     """
     try:
         # Reference the Firestore document for the user
@@ -49,19 +49,19 @@ def delete_data_for_year(user_id, year):
         # Use Firestore's update method with DELETE_FIELD to remove the year data
         from google.cloud.firestore_v1 import DELETE_FIELD
         user_ref.update({
-            year: DELETE_FIELD
+            year: DELETE_FIELD,
         })
-        
+
         print(f"Data for {year} has been successfully deleted for user {user_id}.")
     except Exception as e:
         print(f"An error occurred while deleting data: {e}")
 
 def delete_all_user_data(user_id):
-    """
-    Deletes all data for a specific user from their Firestore document.
+    """Deletes all data for a specific user from their Firestore document.
     
     Args:
         user_id (str): The ID of the user.
+
     """
     try:
         # Reference the Firestore document for the user
@@ -69,7 +69,7 @@ def delete_all_user_data(user_id):
 
         # Delete the entire document
         user_ref.delete()
-        
+
         print(f"All data for user {user_id} has been successfully deleted.")
     except Exception as e:
         print(f"An error occurred while deleting all data for user {user_id}: {e}")

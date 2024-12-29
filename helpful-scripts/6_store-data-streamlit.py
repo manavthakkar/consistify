@@ -1,11 +1,13 @@
-import streamlit as st
-import cv2
-import numpy as np
 import calendar
-import utils  
+
+import cv2
 import firebase_admin
+import numpy as np
+import streamlit as st
 from firebase_admin import credentials, firestore
 from streamlit_google_auth import Authenticate
+
+import utils
 
 # Firebase Initialization
 if not firebase_admin._apps:
@@ -16,8 +18,7 @@ if not firebase_admin._apps:
 db = firestore.client()
 
 def get_user_data(user_id, year, month_name):
-    """
-    Retrieve user data for a specific year and month from Firestore.
+    """Retrieve user data for a specific year and month from Firestore.
     """
     doc = db.collection("users").document(user_id).get()
     if doc.exists:
@@ -27,8 +28,7 @@ def get_user_data(user_id, year, month_name):
     return None
 
 def store_user_data(user_id, user_data):
-    """
-    Store user data in Firestore.
+    """Store user data in Firestore.
     """
     db.collection("users").document(user_id).set(user_data, merge=True)
 
@@ -153,13 +153,12 @@ def process_image_and_generate_collage(img, year, percentage_threshold=50):
 
     ##################### Final Visualization #####################
     #collage = utils.create_collage(img, imgFinal, scale=0.3)
-    
+
     return imgFinal, month_name, binary_array
 
 
 def get_days_in_month(year, month_name):
-    """
-    Get the number of days in a month, considering leap years.
+    """Get the number of days in a month, considering leap years.
     """
     month_number = list(calendar.month_name).index(month_name)  # Get the month number
     _, num_days = calendar.monthrange(year, month_number)
@@ -171,10 +170,10 @@ def store_data_main():
 
     # Google Authentication
     authenticator = Authenticate(
-        secret_credentials_path='google_credentials.json',
-        cookie_name='auth_cookie',
-        cookie_key='this_is_secret',
-        redirect_uri='http://localhost:8501',
+        secret_credentials_path="google_credentials.json",
+        cookie_name="auth_cookie",
+        cookie_key="this_is_secret",
+        redirect_uri="http://localhost:8501",
     )
 
     # Check authentication
@@ -183,7 +182,7 @@ def store_data_main():
     # Show login button
     authenticator.login()
 
-    if not st.session_state.get('connected', False):
+    if not st.session_state.get("connected", False):
         # Show information only if the user is not logged in
         st.write("### Welcome to the Habit Tracker App!")
         st.write("""
@@ -197,15 +196,15 @@ def store_data_main():
         """)
         st.warning("Please log in with Google to access the app features.")
         st.stop()
-    
+
 
     # Display user details after login
-    st.image(st.session_state['user_info'].get('picture'), width=80)
+    st.image(st.session_state["user_info"].get("picture"), width=80)
     st.write(f"**Hello, {st.session_state['user_info'].get('name')}!**")
     st.write(f"Your email is **{st.session_state['user_info'].get('email')}**.")
-    user_id = st.session_state['oauth_id']
+    user_id = st.session_state["oauth_id"]
 
-    if st.button('Log out'):
+    if st.button("Log out"):
         authenticator.logout()
         st.stop()
 
@@ -218,16 +217,16 @@ def store_data_main():
 
     if uploaded_file is not None:
         st.write("Processing your image...")
-        
+
         # Slider for percentage threshold
         percentage_threshold = st.slider(
             "Set the percentage threshold for checkbox detection:",
             min_value=0,
             max_value=100,
             value=50,  # Default value
-            step=1
+            step=1,
         )
-        
+
         # Convert the uploaded file to OpenCV format
         file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
         img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
@@ -266,8 +265,8 @@ def store_data_main():
             # Prepare the data to store in Firebase
             extracted_data = {
                 str(year): {
-                    month_name: habit_data
-                }
+                    month_name: habit_data,
+                },
             }
 
             # Check if data exists for the specific year and month
@@ -282,11 +281,10 @@ def store_data_main():
                         st.success("Data overwritten successfully in Firebase!")
                 else:
                     st.info("Data was not overwritten.")
-            else:
-                # Add Save Data Button
-                if st.button("Save Data"):
-                    store_user_data(user_id, extracted_data)
-                    st.success("Data saved successfully in Firebase!")
+            # Add Save Data Button
+            elif st.button("Save Data"):
+                store_user_data(user_id, extracted_data)
+                st.success("Data saved successfully in Firebase!")
 
         except Exception as e:
             st.error(f"An error occurred during processing: {e}")

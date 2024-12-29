@@ -1,15 +1,14 @@
-"""
-This script reads habit data from a Firestore database and 
+"""This script reads habit data from a Firestore database and
 generates a visual representation of the habit performance for a given year.
 """
 
-from PIL import Image, ImageDraw, ImageFont
-import cv2
-import numpy as np
 import calendar
 
+import cv2
 import firebase_admin
+import numpy as np
 from firebase_admin import credentials, firestore
+from PIL import Image, ImageDraw, ImageFont
 
 # Check if the app is already initialized
 if not firebase_admin._apps:
@@ -41,11 +40,11 @@ def draw_bar_chart_on_image(image, percentage_array, display_array, font_path):
         # Calculate the top-left and bottom-right coordinates for the current rectangle
         top_left_corner = (
             lower_left_corner[0] + i * (width + gap_between_bars),
-            bottom_y - current_height
+            bottom_y - current_height,
         )
         bottom_right_corner = (
             top_left_corner[0] + width,
-            bottom_y
+            bottom_y,
         )
 
         # Define the color and thickness for the filled rectangle
@@ -73,7 +72,7 @@ def draw_bar_chart_on_image(image, percentage_array, display_array, font_path):
         # Calculate the top-left coordinates for the current rectangle (for placing text)
         top_left_corner = (
             lower_left_corner[0] + i * (width + gap_between_bars),
-            bottom_y - int(full_height * (percentage_array[i] / 100.0))
+            bottom_y - int(full_height * (percentage_array[i] / 100.0)),
         )
 
         # Define the position for the text (number) to be displayed on top of each bar
@@ -172,50 +171,50 @@ def fill_year_template(year, habit_name, days_array, habit_streak):
 
     # Load the month template image
     year_images = {
-    365: 'assets/365-year.png',
-    366: 'assets/366-year.png'}
+    365: "assets/365-year.png",
+    366: "assets/366-year.png"}
 
-    image = cv2.imread(year_images.get(no_of_days, 'assets/365-year.png'))
+    image = cv2.imread(year_images.get(no_of_days, "assets/365-year.png"))
 
     # Remove trailing zeros to match the length of available data
     while days_array and days_array[-1] == 0:
         days_array.pop()
 
     # Draw the bar chart on the image with numbers on each bar using the custom font
-    image = draw_bar_chart_on_image(image, percentage_array, days_array, 'assets/Rubik-Regular.ttf')
+    image = draw_bar_chart_on_image(image, percentage_array, days_array, "assets/Rubik-Regular.ttf")
 
     # Display circular progress bar
     image = draw_circular_progress_bar_on_image(image, success_rate, (474, 690), 65, 19)
 
     # Display the success rate
     if success_rate < 10:
-        image = add_text_to_image(image, f'{success_rate}%', 'assets/Rubik-Bold.ttf', 36, (447, 670), (154, 162, 253))
+        image = add_text_to_image(image, f"{success_rate}%", "assets/Rubik-Bold.ttf", 36, (447, 670), (154, 162, 253))
     elif success_rate < 100:
-        image = add_text_to_image(image, f'{success_rate}%', 'assets/Rubik-Bold.ttf', 36, (437, 670), (154, 162, 253))
+        image = add_text_to_image(image, f"{success_rate}%", "assets/Rubik-Bold.ttf", 36, (437, 670), (154, 162, 253))
     else:
-        image = add_text_to_image(image, f'{success_rate}%', 'assets/Rubik-Bold.ttf', 36, (426, 670), (154, 162, 253))
+        image = add_text_to_image(image, f"{success_rate}%", "assets/Rubik-Bold.ttf", 36, (426, 670), (154, 162, 253))
 
     # Display the year on the image
-    image = add_text_to_image(image, str(year), 'assets/Rubik-SemiBold.ttf', 48, (32, 12), (255, 255, 255))
+    image = add_text_to_image(image, str(year), "assets/Rubik-SemiBold.ttf", 48, (32, 12), (255, 255, 255))
 
     # Disply total days
     if total_days < 10:
-        image = add_text_to_image(image, "0" + str(total_days), 'assets/Rubik-SemiBold.ttf', 36, (122, 618), (77, 87, 200))
+        image = add_text_to_image(image, "0" + str(total_days), "assets/Rubik-SemiBold.ttf", 36, (122, 618), (77, 87, 200))
     elif total_days < 100:
-        image = add_text_to_image(image, str(total_days), 'assets/Rubik-SemiBold.ttf', 36, (118, 618), (77, 87, 200))
+        image = add_text_to_image(image, str(total_days), "assets/Rubik-SemiBold.ttf", 36, (118, 618), (77, 87, 200))
     else:
-        image = add_text_to_image(image, str(total_days), 'assets/Rubik-SemiBold.ttf', 36, (106, 618), (77, 87, 200))
+        image = add_text_to_image(image, str(total_days), "assets/Rubik-SemiBold.ttf", 36, (106, 618), (77, 87, 200))
 
     # Display streak
     if habit_streak < 10:
-        image = add_text_to_image(image, "0" + str(habit_streak), 'assets/Rubik-SemiBold.ttf', 36, (116, 722), (77, 87, 200))
+        image = add_text_to_image(image, "0" + str(habit_streak), "assets/Rubik-SemiBold.ttf", 36, (116, 722), (77, 87, 200))
     elif habit_streak < 100:
-        image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-SemiBold.ttf', 36, (116, 722), (77, 87, 200))
+        image = add_text_to_image(image, str(habit_streak), "assets/Rubik-SemiBold.ttf", 36, (116, 722), (77, 87, 200))
     else:
-        image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-SemiBold.ttf', 36, (106, 722), (77, 87, 200))
+        image = add_text_to_image(image, str(habit_streak), "assets/Rubik-SemiBold.ttf", 36, (106, 722), (77, 87, 200))
 
     # Display the habit name
-    image = add_centered_custom_text(image, habit_name, 'assets/Rubik-Regular.ttf', 24, 130, (231, 216, 200))
+    image = add_centered_custom_text(image, habit_name, "assets/Rubik-Regular.ttf", 24, 130, (231, 216, 200))
 
     return image
 
@@ -239,36 +238,35 @@ def habit_days_count_year(data, year, habit_name):
             habit_name = "Workout"
         Output:
             [23, 25, 18, 14, 25, ...]
-    """
 
+    """
     # Define the months in order
     months_order = [
-        "January", "February", "March", "April", 
-        "May", "June", "July", "August", 
-        "September", "October", "November", "December"
+        "January", "February", "March", "April",
+        "May", "June", "July", "August",
+        "September", "October", "November", "December",
     ]
-    
+
     # Get the data for the given year
     year_data = data.get(year, {})
-    
+
     # Initialize the result array with 0 for each month
     result = [0] * 12
-    
+
     for month_index, month in enumerate(months_order):
         # Check if the month exists in the data
         if month in year_data and habit_name in year_data[month]:
             # Count the number of days the habit was performed
             result[month_index] = sum(year_data[month][habit_name])
-    
+
     # Remove trailing zeros to match the length of available data
     # while result and result[-1] == 0:
     #     result.pop()
-    
+
     return result
 
 def longest_habit_streak_across_year(data, year, habit_name):
-    """
-    Calculate the longest streak of consecutive days a specific habit was performed
+    """Calculate the longest streak of consecutive days a specific habit was performed
     across all months in a given year.
 
     Args:
@@ -286,21 +284,21 @@ def longest_habit_streak_across_year(data, year, habit_name):
             habit_name = "Workout"
         Output:
             56  # (Example: 10 consecutive days of performing the habit)
-    """
 
+    """
     # Get the data for the given year
     year_data = data.get(year, {})
-    
+
     longest_streak = 0
     current_streak = 0
-    
+
     # Define the months in order
     months_order = [
-        "January", "February", "March", "April", 
-        "May", "June", "July", "August", 
-        "September", "October", "November", "December"
+        "January", "February", "March", "April",
+        "May", "June", "July", "August",
+        "September", "October", "November", "December",
     ]
-    
+
     for month in months_order:
         # Check if the month exists in the data and contains the habit
         if month in year_data and habit_name in year_data[month]:
@@ -314,7 +312,7 @@ def longest_habit_streak_across_year(data, year, habit_name):
         else:
             # Reset the streak if the month or habit data is missing
             current_streak = 0
-    
+
     return longest_streak
 
 
@@ -325,23 +323,22 @@ if __name__ == "__main__":
         doc = db.collection("users").document(user_id).get()
         if doc.exists:
             return doc.to_dict()
-        else:
-            return None
-        
+        return None
+
     user_id = "123456789"                                               # will be obtained from Google Authentication
 
     # retrieve all data from the user_id
     user_data = get_user_data(user_id)
 
     # Example usage
-    year = 2023 
-    habit_name = 'Workout'                                                                # Name of the habit                                                      # Year
+    year = 2023
+    habit_name = "Workout"                                                                # Name of the habit                                                      # Year
     days_array =   habit_days_count_year(user_data, str(year), habit_name)                # No of days habit performed in each month
     habit_streak = longest_habit_streak_across_year(user_data, str(year), habit_name)     # Longest habit streak                                                      # Year
 
     output_image = fill_year_template(year, habit_name, days_array, habit_streak)
 
     # Display the image with the bar chart and numbers
-    cv2.imshow(f'{year}', output_image)
+    cv2.imshow(f"{year}", output_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()

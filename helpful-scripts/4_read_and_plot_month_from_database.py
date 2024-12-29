@@ -1,15 +1,14 @@
-"""
-This script reads the habit data for a specific month and year from Firestore and
+"""This script reads the habit data for a specific month and year from Firestore and
 displays the corresponding month template with the habit data filled in.
 """
 
-from PIL import Image, ImageDraw, ImageFont
-import cv2
-import numpy as np
 import calendar
 
+import cv2
 import firebase_admin
+import numpy as np
 from firebase_admin import credentials, firestore
+from PIL import Image, ImageDraw, ImageFont
 
 # Check if the app is already initialized
 if not firebase_admin._apps:
@@ -70,7 +69,7 @@ def draw_circles_on_image(image, circle_array):
             col = idx % 7
             center_coordinates = (
                 start_x + col * center_to_center_distance_x,
-                start_y + row * center_to_center_distance_y
+                start_y + row * center_to_center_distance_y,
             )
             cv2.circle(image, center_coordinates, radius, color, thickness)
 
@@ -78,14 +77,14 @@ def draw_circles_on_image(image, circle_array):
     return image
 
 def longest_streak(arr):
-    """
-    Finds the longest streak of consecutive 1's in a binary array.
+    """Finds the longest streak of consecutive 1's in a binary array.
 
     Args:
     arr (list): A binary list containing only 0s and 1s.
 
     Returns:
     int: The length of the longest streak of 1's.
+
     """
     max_streak = 0
     current_streak = 0
@@ -108,12 +107,12 @@ def fill_month_template(month, year, habit_name, total_days, habit_array):
 
     # Load the month template image
     month_images = {
-    28: 'assets/28-month-1.png',
-    29: 'assets/29-month-1.png',
-    30: 'assets/30-month-1.png',
-    31: 'assets/31-month-1.png'}
+    28: "assets/28-month-1.png",
+    29: "assets/29-month-1.png",
+    30: "assets/30-month-1.png",
+    31: "assets/31-month-1.png"}
 
-    image = cv2.imread(month_images.get(days_in_month, 'assets/31-month.png'))
+    image = cv2.imread(month_images.get(days_in_month, "assets/31-month.png"))
 
     # Limit the circle array to the number of days in the month
     habit_array = habit_array[:days_in_month]
@@ -127,33 +126,33 @@ def fill_month_template(month, year, habit_name, total_days, habit_array):
     success_rate = int(days_habit_performed / days_in_month * 100)
 
     # Add text to the image
-    image = add_text_to_image(image, heading, 'assets/Rubik-SemiBold.ttf', 48, (29, 16), (255, 255, 255))
-    image = add_text_to_image(image, habit_name, 'assets/Rubik-Regular.ttf', 32, (29, 82), (148, 168, 254))
+    image = add_text_to_image(image, heading, "assets/Rubik-SemiBold.ttf", 48, (29, 16), (255, 255, 255))
+    image = add_text_to_image(image, habit_name, "assets/Rubik-Regular.ttf", 32, (29, 82), (148, 168, 254))
 
     # Adjust the position of the text based on the number of digits
     if days_habit_performed < 10:
-        image = add_text_to_image(image, str(days_habit_performed), 'assets/Rubik-SemiBold.ttf', 36, (123, 590), (148, 168, 254))
+        image = add_text_to_image(image, str(days_habit_performed), "assets/Rubik-SemiBold.ttf", 36, (123, 590), (148, 168, 254))
     else:
-        image = add_text_to_image(image, str(days_habit_performed), 'assets/Rubik-SemiBold.ttf', 36, (106, 590), (148, 168, 254))
+        image = add_text_to_image(image, str(days_habit_performed), "assets/Rubik-SemiBold.ttf", 36, (106, 590), (148, 168, 254))
 
     if habit_streak < 10:
-        image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-Bold.ttf', 24, (444, 686), (77, 87, 200))
+        image = add_text_to_image(image, str(habit_streak), "assets/Rubik-Bold.ttf", 24, (444, 686), (77, 87, 200))
     else:
-        image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-Bold.ttf', 24, (430, 686), (77, 87, 200))
+        image = add_text_to_image(image, str(habit_streak), "assets/Rubik-Bold.ttf", 24, (430, 686), (77, 87, 200))
 
     if total_days < 10:
-        image = add_text_to_image(image, str(total_days), 'assets/Rubik-Bold.ttf', 24, (444, 776), (77, 87, 200))
+        image = add_text_to_image(image, str(total_days), "assets/Rubik-Bold.ttf", 24, (444, 776), (77, 87, 200))
     elif total_days < 100:
-        image = add_text_to_image(image, str(total_days), 'assets/Rubik-Bold.ttf', 24, (430, 776), (77, 87, 200))
+        image = add_text_to_image(image, str(total_days), "assets/Rubik-Bold.ttf", 24, (430, 776), (77, 87, 200))
     else:
-        image = add_text_to_image(image, str(total_days), 'assets/Rubik-Bold.ttf', 24, (416, 776), (77, 87, 200))
+        image = add_text_to_image(image, str(total_days), "assets/Rubik-Bold.ttf", 24, (416, 776), (77, 87, 200))
 
     if success_rate < 10:
-        image = add_text_to_image(image, str(success_rate) + " %", 'assets/Rubik-Bold.ttf', 36, (424, 515), (154, 162, 253))
+        image = add_text_to_image(image, str(success_rate) + " %", "assets/Rubik-Bold.ttf", 36, (424, 515), (154, 162, 253))
     elif success_rate < 100:
-        image = add_text_to_image(image, str(success_rate) + " %", 'assets/Rubik-Bold.ttf', 36, (416, 515), (154, 162, 253))
+        image = add_text_to_image(image, str(success_rate) + " %", "assets/Rubik-Bold.ttf", 36, (416, 515), (154, 162, 253))
     else:
-        image = add_text_to_image(image, str(success_rate) + " ", 'assets/Rubik-Bold.ttf', 36, (420, 515), (154, 162, 253))
+        image = add_text_to_image(image, str(success_rate) + " ", "assets/Rubik-Bold.ttf", 36, (420, 515), (154, 162, 253))
 
 
     # Draw circular progress bar on the image
@@ -165,40 +164,42 @@ def fill_month_template(month, year, habit_name, total_days, habit_array):
     return image
 
 def get_habit_data_and_cumulative_sum(data, year, month, habit):
-    """
-    Retrieves the binary array for a specific habit in a given year and month,
+    """Retrieves the binary array for a specific habit in a given year and month,
     along with the cumulative number of days the habit was performed from January
     to the specified month.
 
-    Parameters:
+    Parameters
+    ----------
     - data (dict): The dictionary containing habit data.
     - year (str): The year as a string (e.g., '2024').
     - month (str): The month as a string (e.g., 'March').
     - habit (str): The habit as a string (e.g., 'Workout').
 
-    Returns:
+    Returns
+    -------
     - tuple: (binary_array, cumulative_sum)
       - binary_array: The binary array corresponding to the habit for the specified month.
       - cumulative_sum: The cumulative sum of days the habit was performed from January to the specified month.
     - tuple of (None, None): If the year, month, or habit is not found.
+
     """
     try:
         # List of months in order to calculate cumulative sum
-        months_in_order = ['January', 'February', 'March', 'April', 'May', 'June', 
-                           'July', 'August', 'September', 'October', 'November', 'December']
-        
+        months_in_order = ["January", "February", "March", "April", "May", "June",
+                           "July", "August", "September", "October", "November", "December"]
+
         if year not in data:
             raise KeyError(f"Year '{year}' not found in the data.")
-        
+
         if month not in months_in_order:
             raise ValueError(f"Invalid month '{month}'.")
-        
+
         if month not in data[year]:
             raise KeyError(f"Month '{month}' not found in the data for year '{year}'.")
-        
+
         if habit not in data[year][month]:
             raise KeyError(f"Habit '{habit}' not found in the data for year '{year}', month '{month}'.")
-        
+
         # Binary array for the specified month
         binary_array = data[year][month][habit]
 
@@ -212,7 +213,7 @@ def get_habit_data_and_cumulative_sum(data, year, month, habit):
                 break
 
         return binary_array, cumulative_sum
-    
+
     except KeyError as e:
         print(f"KeyError: {e}")
         return None, None
@@ -223,7 +224,7 @@ def get_habit_data_and_cumulative_sum(data, year, month, habit):
 def get_month_number(month_name):
     import calendar
     try:
-        month_name = month_name.capitalize()  
+        month_name = month_name.capitalize()
         month_number = list(calendar.month_name).index(month_name)
         return month_number
     except ValueError:
@@ -244,9 +245,8 @@ if __name__ == "__main__":
         doc = db.collection("users").document(user_id).get()
         if doc.exists:
             return doc.to_dict()
-        else:
-            return None
-        
+        return None
+
     user_id = "123456789"       # will be obtained from Google Authentication
 
     # retrieve all data from the user_id
@@ -259,6 +259,6 @@ if __name__ == "__main__":
     filled_image = fill_month_template(month_number, year, habit_name, total_days, habit_array)
 
     # Display the image using OpenCV
-    cv2.imshow(f'{month} / {year}', filled_image)
+    cv2.imshow(f"{month} / {year}", filled_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()

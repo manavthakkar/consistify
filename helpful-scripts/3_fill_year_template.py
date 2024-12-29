@@ -1,7 +1,9 @@
+import calendar
+
 import cv2
 import numpy as np
-from PIL import ImageFont, ImageDraw, Image
-import calendar 
+from PIL import Image, ImageDraw, ImageFont
+
 
 def draw_bar_chart_on_image(image, percentage_array, display_array, font_path):
     # Define given parameters for the bar chart
@@ -25,11 +27,11 @@ def draw_bar_chart_on_image(image, percentage_array, display_array, font_path):
         # Calculate the top-left and bottom-right coordinates for the current rectangle
         top_left_corner = (
             lower_left_corner[0] + i * (width + gap_between_bars),
-            bottom_y - current_height
+            bottom_y - current_height,
         )
         bottom_right_corner = (
             top_left_corner[0] + width,
-            bottom_y
+            bottom_y,
         )
 
         # Define the color and thickness for the filled rectangle
@@ -57,7 +59,7 @@ def draw_bar_chart_on_image(image, percentage_array, display_array, font_path):
         # Calculate the top-left coordinates for the current rectangle (for placing text)
         top_left_corner = (
             lower_left_corner[0] + i * (width + gap_between_bars),
-            bottom_y - int(full_height * (percentage_array[i] / 100.0))
+            bottom_y - int(full_height * (percentage_array[i] / 100.0)),
         )
 
         # Define the position for the text (number) to be displayed on top of each bar
@@ -156,50 +158,50 @@ def fill_year_template(year, habit_name, days_array, habit_streak):
 
     # Load the month template image
     year_images = {
-    365: 'assets/365-year.png',
-    366: 'assets/366-year.png'}
+    365: "assets/365-year.png",
+    366: "assets/366-year.png"}
 
-    image = cv2.imread(year_images.get(no_of_days, 'assets/365-year.png'))
+    image = cv2.imread(year_images.get(no_of_days, "assets/365-year.png"))
 
     # Remove trailing zeros to match the length of available data
     while days_array and days_array[-1] == 0:
         days_array.pop()
 
     # Draw the bar chart on the image with numbers on each bar using the custom font
-    image = draw_bar_chart_on_image(image, percentage_array, days_array, 'assets/Rubik-Regular.ttf')
+    image = draw_bar_chart_on_image(image, percentage_array, days_array, "assets/Rubik-Regular.ttf")
 
     # Display circular progress bar
     image = draw_circular_progress_bar_on_image(image, success_rate, (474, 690), 65, 19)
 
     # Display the success rate
     if success_rate < 10:
-        image = add_text_to_image(image, f'{success_rate}%', 'assets/Rubik-Bold.ttf', 36, (447, 670), (154, 162, 253))
+        image = add_text_to_image(image, f"{success_rate}%", "assets/Rubik-Bold.ttf", 36, (447, 670), (154, 162, 253))
     elif success_rate < 100:
-        image = add_text_to_image(image, f'{success_rate}%', 'assets/Rubik-Bold.ttf', 36, (437, 670), (154, 162, 253))
+        image = add_text_to_image(image, f"{success_rate}%", "assets/Rubik-Bold.ttf", 36, (437, 670), (154, 162, 253))
     else:
-        image = add_text_to_image(image, f'{success_rate}%', 'assets/Rubik-Bold.ttf', 36, (426, 670), (154, 162, 253))
+        image = add_text_to_image(image, f"{success_rate}%", "assets/Rubik-Bold.ttf", 36, (426, 670), (154, 162, 253))
 
     # Display the year on the image
-    image = add_text_to_image(image, str(year), 'assets/Rubik-SemiBold.ttf', 48, (32, 12), (255, 255, 255))
+    image = add_text_to_image(image, str(year), "assets/Rubik-SemiBold.ttf", 48, (32, 12), (255, 255, 255))
 
     # Disply total days
     if total_days < 10:
-        image = add_text_to_image(image, "0" + str(total_days), 'assets/Rubik-SemiBold.ttf', 36, (122, 618), (77, 87, 200))
+        image = add_text_to_image(image, "0" + str(total_days), "assets/Rubik-SemiBold.ttf", 36, (122, 618), (77, 87, 200))
     elif total_days < 100:
-        image = add_text_to_image(image, str(total_days), 'assets/Rubik-SemiBold.ttf', 36, (118, 618), (77, 87, 200))
+        image = add_text_to_image(image, str(total_days), "assets/Rubik-SemiBold.ttf", 36, (118, 618), (77, 87, 200))
     else:
-        image = add_text_to_image(image, str(total_days), 'assets/Rubik-SemiBold.ttf', 36, (106, 618), (77, 87, 200))
+        image = add_text_to_image(image, str(total_days), "assets/Rubik-SemiBold.ttf", 36, (106, 618), (77, 87, 200))
 
     # Display streak
     if habit_streak < 10:
-        image = add_text_to_image(image, "0" + str(habit_streak), 'assets/Rubik-SemiBold.ttf', 36, (116, 722), (77, 87, 200))
+        image = add_text_to_image(image, "0" + str(habit_streak), "assets/Rubik-SemiBold.ttf", 36, (116, 722), (77, 87, 200))
     elif habit_streak < 100:
-        image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-SemiBold.ttf', 36, (116, 722), (77, 87, 200))
+        image = add_text_to_image(image, str(habit_streak), "assets/Rubik-SemiBold.ttf", 36, (116, 722), (77, 87, 200))
     else:
-        image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-SemiBold.ttf', 36, (106, 722), (77, 87, 200))
+        image = add_text_to_image(image, str(habit_streak), "assets/Rubik-SemiBold.ttf", 36, (106, 722), (77, 87, 200))
 
     # Display the habit name
-    image = add_centered_custom_text(image, habit_name, 'assets/Rubik-Regular.ttf', 24, 130, (231, 216, 200))
+    image = add_centered_custom_text(image, habit_name, "assets/Rubik-Regular.ttf", 24, 130, (231, 216, 200))
 
     return image
 
@@ -208,11 +210,11 @@ def fill_year_template(year, habit_name, days_array, habit_streak):
 days_array =    [23, 14, 25, 26, 25, 27, 23, 24, 27, 30, 25, 28]    # No of days habit performed in each month
 habit_streak = 52                                                   # Current habit streak
 year = 2022                                                         # Year
-habit_name = 'Exercise'                                             # Name of the habit
+habit_name = "Exercise"                                             # Name of the habit
 
 output_image = fill_year_template(year, habit_name, days_array, habit_streak)
 
 # Display the image with the bar chart and numbers
-cv2.imshow(f'{year}', output_image)
+cv2.imshow(f"{year}", output_image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()

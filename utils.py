@@ -1,53 +1,14 @@
-import cv2
-import numpy as np
-import os
-import pandas as pd
 import base64
-import streamlit as st
 import calendar
 
-def stackImages(imgArray,scale,lables=[]):
-    rows = len(imgArray)
-    cols = len(imgArray[0])
-    rowsAvailable = isinstance(imgArray[0], list)
-    width = imgArray[0][0].shape[1]
-    height = imgArray[0][0].shape[0]
-    if rowsAvailable:
-        for x in range ( 0, rows):
-            for y in range(0, cols):
-                imgArray[x][y] = cv2.resize(imgArray[x][y], (0, 0), None, scale, scale)
-                if len(imgArray[x][y].shape) == 2: imgArray[x][y]= cv2.cvtColor( imgArray[x][y], cv2.COLOR_GRAY2BGR)
-        imageBlank = np.zeros((height, width, 3), np.uint8)
-        hor = [imageBlank]*rows
-        hor_con = [imageBlank]*rows
-        for x in range(0, rows):
-            hor[x] = np.hstack(imgArray[x])
-            hor_con[x] = np.concatenate(imgArray[x])
-        ver = np.vstack(hor)
-        ver_con = np.concatenate(hor)
-    else:
-        for x in range(0, rows):
-            imgArray[x] = cv2.resize(imgArray[x], (0, 0), None, scale, scale)
-            if len(imgArray[x].shape) == 2: imgArray[x] = cv2.cvtColor(imgArray[x], cv2.COLOR_GRAY2BGR)
-        hor= np.hstack(imgArray)
-        hor_con= np.concatenate(imgArray)
-        ver = hor
-    if len(lables) != 0:
-        eachImgWidth= int(ver.shape[1] / cols)
-        eachImgHeight = int(ver.shape[0] / rows)
-        #print(eachImgHeight)
-        for d in range(0, rows):
-            for c in range (0,cols):
-                cv2.rectangle(ver,(c*eachImgWidth,eachImgHeight*d),(c*eachImgWidth+len(lables[d][c])*13+27,30+eachImgHeight*d),(255,255,255),cv2.FILLED)
-                cv2.putText(ver,lables[d][c],(eachImgWidth*c+10,eachImgHeight*d+20),cv2.FONT_HERSHEY_COMPLEX,0.7,(255,0,255),2)
-    return ver
+import cv2
+import numpy as np
+import streamlit as st
 
+def rectContour(contours):
+    """It takes the contours as input and returns the rectangle contours
 
-def rectContour(contours): 
-    '''
-    It takes the contours as input and returns the rectangle contours
-
-    '''
+    """
     rectCon = []                        # List to store all rectangle contours
     for i in contours:
         area = cv2.contourArea(i)
@@ -62,8 +23,7 @@ def rectContour(contours):
     return rectCon
 
 def getCornerPoints(cont):
-    """
-    This function takes the contour as input and returns the corner points of the contour
+    """This function takes the contour as input and returns the corner points of the contour
 
     """
     peri = cv2.arcLength(cont, True) # LENGTH OF CONTOUR
@@ -71,8 +31,7 @@ def getCornerPoints(cont):
     return approx
 
 def reorder(myPoints):
-    """
-    This function takes the points as input and returns the arranged points (of the rectangle)
+    """This function takes the points as input and returns the arranged points (of the rectangle)
     for example, it will return the points in the following order:
     [top-left, top-right, bottom-left, bottom-right]
     
@@ -86,43 +45,44 @@ def reorder(myPoints):
     myPointsNew[0] = myPoints[np.argmin(add)]  #[0,0]    # origin point has the smallest sum
     myPointsNew[3] =myPoints[np.argmax(add)]   #[w,h]    # w+h gives the largest sum
     diff = np.diff(myPoints, axis=1)
-    myPointsNew[1] =myPoints[np.argmin(diff)]  #[w,0]    
-    myPointsNew[2] = myPoints[np.argmax(diff)] #[h,0]    
+    myPointsNew[1] =myPoints[np.argmin(diff)]  #[w,0]
+    myPointsNew[2] = myPoints[np.argmax(diff)] #[h,0]
 
     return myPointsNew
 
 
 def splitBoxes(img, rows=6, cols=31):
-    """
-    This function takes the image as input and returns the split boxes (rowsxcols)
+    """This function takes the image as input and returns the split boxes (rowsxcols)
     """
     rows = np.vsplit(img, rows)  # SPLIT THE IMAGE INTO GIVEN ROWS
     boxes = []  # array to store all boxes
-    
+
     for r in rows:
         # Calculate the width of each column
         col_width = r.shape[1] // cols
         extra_pixels = r.shape[1] % cols
-        
+
         for i in range(cols):
             if i < extra_pixels:
                 col = r[:, i*col_width + i:(i+1)*col_width + i + 1]  # Add an extra pixel for the first 'extra_pixels' columns
             else:
                 col = r[:, i*col_width + extra_pixels:(i+1)*col_width + extra_pixels]
             boxes.append(col)
-    
+
     return boxes
 
 def draw_circles_on_image(image, binary_array):
-    """
-    Draws circles on the provided image based on the binary_array where 1s indicate the positions of the circles.
+    """Draws circles on the provided image based on the binary_array where 1s indicate the positions of the circles.
 
-    Parameters:
+    Parameters
+    ----------
     - image: np.array (The image on which to draw the circles)
     - binary_array: np.array (A binary array indicating where to draw circles)
 
-    Returns:
+    Returns
+    -------
     - np.array: The image with circles drawn on it.
+
     """
     # Get the dimensions of the image and the binary array
     img_height, img_width = image.shape[:2]
@@ -146,8 +106,7 @@ def draw_circles_on_image(image, binary_array):
     return image
 
 def apply_stats_to_image(image, stats, suffix_text="", vertical_adjustment_factor=0.1):
-    """
-    Apply stats to an image with evenly distributed boxes and return the annotated image.
+    """Apply stats to an image with evenly distributed boxes and return the annotated image.
 
     Args:
     image (np.array): Image to annotate.
@@ -157,8 +116,8 @@ def apply_stats_to_image(image, stats, suffix_text="", vertical_adjustment_facto
 
     Returns:
     np.array: Annotated image as a numpy array.
-    """
 
+    """
     # Calculate the width of each box assuming they are evenly spaced
     box_width = image.shape[1] // len(stats)
 
@@ -166,14 +125,14 @@ def apply_stats_to_image(image, stats, suffix_text="", vertical_adjustment_facto
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale_large = 0.55
     font_scale_small = 0.35
-    font_color = (255, 0, 0)  
+    font_color = (255, 0, 0)
     thickness = 1
 
     # Place each stat dynamically adjusted above the center of each box
     for i, stat in enumerate(stats):
         number_text = str(stat)
         total_text = number_text + " " + suffix_text
-        
+
         # Calculate total text size
         total_size_large = cv2.getTextSize(number_text, font, font_scale_large, thickness)[0]
         total_size_small = cv2.getTextSize(suffix_text, font, font_scale_small, thickness)[0]
@@ -201,23 +160,24 @@ def count_total_days(habit_array):
     return days_performed
 
 def get_days_in_month(year, month_name):
-    """
-    Get the number of days in a month, considering leap years.
+    """Get the number of days in a month, considering leap years.
     """
     month_number = list(calendar.month_name).index(month_name)  # Get the month number
     _, num_days = calendar.monthrange(year, month_number)
     return num_days
 
 def get_longest_streak(habit_array):
-    """
-    Calculate the longest streak of consecutive days each habit was performed.
+    """Calculate the longest streak of consecutive days each habit was performed.
 
-    Parameters:
+    Parameters
+    ----------
     habit_array (numpy.ndarray): A 2D numpy array where each column represents a habit and each row represents a day of the month. 
                                  Elements are 1 if the habit was performed on that day and 0 otherwise.
 
-    Returns:
+    Returns
+    -------
     numpy.ndarray: An array where each element represents the longest streak of consecutive days the corresponding habit was performed.
+
     """
     def calculate_streak(array_column):
         max_streak = 0
@@ -230,23 +190,24 @@ def get_longest_streak(habit_array):
                 current_streak = 0
         return max_streak
 
-    # Process each column in the array 
+    # Process each column in the array
     streaks = np.array([calculate_streak(habit_array[:, col]) for col in range(habit_array.shape[1])])
     return streaks
 
 def detect_month(array):
-    """
-    This function takes a 2D numpy array where each row represents values for 
+    """This function takes a 2D numpy array where each row represents values for
     four consecutive months and returns the month number (1-based index) and 
     the name of the month that has the highest value.
 
-    Parameters:
+    Parameters
+    ----------
     array (numpy.ndarray): A 2D numpy array where:
                            - The first row represents values for January, February, March, and April.
                            - The second row represents values for May, June, July, and August.
                            - The third row represents values for September, October, November, and December.
 
-    Returns:
+    Returns
+    -------
     tuple: A tuple containing:
            - int: The month number (1-based index) with the highest value.
                   For example, 1 represents January, 2 represents February, and so on.
@@ -258,14 +219,15 @@ def detect_month(array):
                          [558., 372., 390., 439.]])
     >>> month_with_highest_value(data)
     (6, 'June')
+
     """
     # List of month names
     month_names = [
-        'January', 'February', 'March', 'April',
-        'May', 'June', 'July', 'August',
-        'September', 'October', 'November', 'December'
+        "January", "February", "March", "April",
+        "May", "June", "July", "August",
+        "September", "October", "November", "December",
     ]
-    
+
     # Flatten the array to get all values in a single list
     flattened_array = array.flatten()
     # Find the index of the maximum value
@@ -274,28 +236,30 @@ def detect_month(array):
     month = max_index + 1
     # Get the name of the month
     month_name = month_names[max_index]
-    
+
     return month, month_name
 
 def draw_month_on_image(image, month): # deprecated, but might be useful for reference
-    """
-    Annotates an image by drawing a circle in a grid cell corresponding to a specified month.
+    """Annotates an image by drawing a circle in a grid cell corresponding to a specified month.
 
     This function divides an image into a grid of 3 rows and 4 columns, where each cell in the grid
     corresponds to a month of the year from January (top-left) to December (bottom-right). It then
     draws a red circle in the cell that corresponds to the given month number.
 
-    Parameters:
+    Parameters
+    ----------
     - image (numpy.ndarray): The image to annotate, represented as a NumPy array. The image
                              should be loaded using OpenCV and passed directly to the function.
     - month (int): The month number (1 for January, 12 for December) for which the circle
                    will be drawn. Must be in the range 1 to 12.
 
-    Returns:
+    Returns
+    -------
     - image (numpy.ndarray): The annotated image as a numpy array, which can be displayed or saved
                              using OpenCV functions.
 
-    Raises:
+    Raises
+    ------
     - ValueError: If the month number is not within the valid range of 1 to 12.
 
     """
@@ -304,52 +268,54 @@ def draw_month_on_image(image, month): # deprecated, but might be useful for ref
 
     # Get image dimensions
     height, width = image.shape[:2]
-    
+
     # Calculate cell width and height
     cell_width = width // 4
     cell_height = height // 3
-    
+
     # Calculate the grid position based on the month
     row = (month - 1) // 4
     column = (month - 1) % 4
-    
+
     # Calculate the center of the cell
     center_x = column * cell_width + cell_width // 2
     center_y = row * cell_height + cell_height // 2
-    
+
     # Radius of the circle
     radius = min(cell_width, cell_height) // 5
-    
+
     # Circle color (BGR format) and thickness
     circle_color = (33, 33, 33)  # BGR
     thickness = 5
-    
+
     # Draw the circle
     cv2.circle(image, (center_x, center_y), radius, circle_color, thickness)
-    
+
     # Return the modified image
     return image
 
 def draw_month_on_image_with_top_row(image, month):
-    """
-    Annotates an image by drawing a circle in a grid cell corresponding to a specified month, 
+    """Annotates an image by drawing a circle in a grid cell corresponding to a specified month,
     while ignoring the extra top row.
 
     This function divides an image into a grid of 4 rows and 4 columns, where the first row is ignored 
     (e.g., header or labels). Each cell in the remaining 3 rows corresponds to a month of the year 
     from January (second row, first column) to December (last row, fourth column).
 
-    Parameters:
+    Parameters
+    ----------
     - image (numpy.ndarray): The image to annotate, represented as a NumPy array. The image
                              should be loaded using OpenCV and passed directly to the function.
     - month (int): The month number (1 for January, 12 for December) for which the circle
                    will be drawn. Must be in the range 1 to 12.
 
-    Returns:
+    Returns
+    -------
     - image (numpy.ndarray): The annotated image as a numpy array, which can be displayed or saved
                              using OpenCV functions.
 
-    Raises:
+    Raises
+    ------
     - ValueError: If the month number is not within the valid range of 1 to 12.
 
     """
@@ -358,51 +324,52 @@ def draw_month_on_image_with_top_row(image, month):
 
     # Get image dimensions
     height, width = image.shape[:2]
-    
+
     # Calculate the height of the top row
     top_row_height = height // 4  # Since there are 4 total rows including the header
-    
+
     # Calculate the height of each remaining cell (excluding the top row)
     cell_height = (height - top_row_height) // 3
     cell_width = width // 4
-    
+
     # Adjust the grid for months (ignoring the top row)
     row = (month - 1) // 4  # 0-based row for the month
     column = (month - 1) % 4  # 0-based column for the month
-    
+
     # Calculate the center of the cell
     center_x = column * cell_width + cell_width // 2
     center_y = top_row_height + row * cell_height + cell_height // 2
-    
+
     # Radius of the circle
     radius = min(cell_width, cell_height) // 5
-    
+
     # Circle color (BGR format) and thickness
     circle_color = (33, 33, 33)  # Blue color in BGR
     thickness = 5
-    
+
     # Draw the circle
     cv2.circle(image, (center_x, center_y), radius, circle_color, thickness)
-    
+
     # Return the modified image
     return image
 
 
-def calculate_streaks(habits_array, position='end'):
-    """
-    Calculate the longest streak of performed habits (represented by 1's) at the start or end of the month.
+def calculate_streaks(habits_array, position="end"):
+    """Calculate the longest streak of performed habits (represented by 1's) at the start or end of the month.
     
     This function takes a 2D numpy array where each row represents a habit and each column represents 
     a day in the month. The value 1 indicates the habit was performed on that day, and 0 indicates 
     it was not performed. The function returns a list of the longest streaks of consecutive 1's 
     at the specified position (start or end) of each habit's array.
 
-    Parameters:
+    Parameters
+    ----------
     habits_array (numpy.ndarray): 2D array with shape (number_of_habits, number_of_days_in_month).
     position (str): Specifies whether to calculate the streak at the 'start' or 'end' of the month. 
                     Default is 'end'.
 
-    Returns:
+    Returns
+    -------
     list: A list of integers representing the longest streak of 1's at the specified position of each habit's array.
     
     Example:
@@ -418,17 +385,18 @@ def calculate_streaks(habits_array, position='end'):
     [1, 2, 1, 7, 3, 0]
     >>> calculate_streaks(habits_array, position='end')
     [3, 4, 0, 2, 0, 6]
+
     """
     streaks = []
     for habit in habits_array:
         streak = 0
-        if position == 'end':
+        if position == "end":
             for day in reversed(habit):
                 if day == 1:
                     streak += 1
                 else:
                     break
-        elif position == 'start':
+        elif position == "start":
             for day in habit:
                 if day == 1:
                     streak += 1
@@ -438,69 +406,73 @@ def calculate_streaks(habits_array, position='end'):
             raise ValueError("Position must be 'start' or 'end'")
         streaks.append(streak)
     return streaks
-    
-def mask_outside_rectangle(image, rectangle_coords, offset=0):
-    """
-    Mask outside of the given rectangle coordinates in the image with white pixels.
 
-    Parameters:
+def mask_outside_rectangle(image, rectangle_coords, offset=0):
+    """Mask outside of the given rectangle coordinates in the image with white pixels.
+
+    Parameters
+    ----------
     - image: Input image as a numpy array.
     - rectangle_coords: A numpy array of shape (4, 1, 2) containing the coordinates of the rectangle.
                        Coordinates should be in the order: top left, top right, bottom left, bottom right.
     - offset: Offset to be added to the rectangle coordinates (positive offset shrinks the rectangle, negative expands it).
 
-    Returns:
+    Returns
+    -------
     - Modified image with white pixels outside the specified rectangle.
+
     """
     # Extract the top-left, top-right, bottom-left, and bottom-right coordinates
     top_left = (rectangle_coords[0][0][0] + offset, rectangle_coords[0][0][1] + offset)
     top_right = (rectangle_coords[1][0][0] - offset, rectangle_coords[1][0][1] + offset)
     bottom_left = (rectangle_coords[2][0][0] + offset, rectangle_coords[2][0][1] - offset)
     bottom_right = (rectangle_coords[3][0][0] - offset, rectangle_coords[3][0][1] - offset)
-    
+
     # Create a mask with the same dimensions as the image, initially all black
     mask = np.zeros_like(image, dtype=np.uint8)
-    
+
     # Define the polygon with the provided coordinates
     polygon_coords = np.array([top_left, top_right, bottom_right, bottom_left])
-    
+
     # Create a white polygon in the mask where we want to keep the original image
     cv2.fillPoly(mask, [polygon_coords], (255, 255, 255))
-    
+
     # Create an image with all pixels set to white
     white_image = np.ones_like(image, dtype=np.uint8) * 255
-    
+
     # Use the mask to blend the original image and the white image
     result = np.where(mask == 255, image, white_image)
 
     return result
 
 def create_collage(image1, image2, scale=0.6):
-    """
-    Creates a side-by-side collage of two images of the same dimensions and scales the final image.
+    """Creates a side-by-side collage of two images of the same dimensions and scales the final image.
 
-    Parameters:
+    Parameters
+    ----------
     image1 (numpy.ndarray): The first input image (BGR format).
     image2 (numpy.ndarray): The second input image (BGR format).
     scale (float): Scaling factor for the final collage.
 
-    Returns:
+    Returns
+    -------
     numpy.ndarray: The scaled collage image.
+
     """
     # Check if images have the same dimensions
     if image1.shape != image2.shape:
         raise ValueError("Both images must have the same dimensions.")
-    
+
     # Concatenate the images side by side
     collage = cv2.hconcat([image1, image2])
-    
+
     # Scale the final collage
     if scale != 1.0:
         # Calculate the new dimensions
         new_width = int(collage.shape[1] * scale)
         new_height = int(collage.shape[0] * scale)
         collage = cv2.resize(collage, (new_width, new_height), interpolation=cv2.INTER_AREA)
-    
+
     return collage
 
 ############################ Streamlit related functions ############################
@@ -532,8 +504,8 @@ def add_side_logo():
     }}
     </style>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
-    
+
 
 
