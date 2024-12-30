@@ -89,10 +89,8 @@ def home_page():
         template_image = Image.open(template_image_path)
         st.image(template_image, caption="Filled template example 🖼️", use_container_width=True)
 
-        # Display Template Image
-        # processed_image_path = "assets/processed-example.png"
-        # processed_image = Image.open(processed_image_path)
-        # st.image(processed_image, caption="Processed template example 🖼️", use_container_width=True)
+        st.markdown("**Note:** Consistify works by detecting the rectangles, make sure you do not mark on the external rectangle for month and for the habit boxes.")
+        st.image("assets/incorrect.png", caption="Incorrect way of marking ❎", use_container_width=True)
 
         st.markdown("""
         ### Visualize Your Progress Like Never Before! 📊
