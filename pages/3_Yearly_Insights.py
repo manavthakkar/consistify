@@ -1,20 +1,24 @@
-import streamlit as st
-from PIL import Image
-import utils
-import numpy as np
-import io
-import cv2
 import calendar
-from PIL import ImageDraw, ImageFont
-import firebase_utils as fb_utils
+import io
+
+import cv2
+import numpy as np
+import streamlit as st
+from PIL import Image, ImageDraw, ImageFont
+
 import auth_functions
+import firebase_utils as fb_utils
+import utils
 
 st.set_page_config(page_title="Yearly Insights", page_icon="📈")
 
 # Initialize Firebase
 db = fb_utils.initialize_firestore()
 
-def draw_bar_chart_on_image(image, percentage_array, display_array, font_path):
+def draw_bar_chart_on_image(image: np.ndarray, 
+                            percentage_array: list[float], 
+                            display_array: list[int], 
+                            font_path: str) -> np.ndarray:
     # Define given parameters for the bar chart
     lower_left_corner = (73, 525)   # Lower left corner of the first rectangle
     width = 23                      # Width of each rectangle
@@ -36,11 +40,11 @@ def draw_bar_chart_on_image(image, percentage_array, display_array, font_path):
         # Calculate the top-left and bottom-right coordinates for the current rectangle
         top_left_corner = (
             lower_left_corner[0] + i * (width + gap_between_bars),
-            bottom_y - current_height
+            bottom_y - current_height,
         )
         bottom_right_corner = (
             top_left_corner[0] + width,
-            bottom_y
+            bottom_y,
         )
 
         # Define the color and thickness for the filled rectangle
@@ -68,7 +72,7 @@ def draw_bar_chart_on_image(image, percentage_array, display_array, font_path):
         # Calculate the top-left coordinates for the current rectangle (for placing text)
         top_left_corner = (
             lower_left_corner[0] + i * (width + gap_between_bars),
-            bottom_y - int(full_height * (percentage_array[i] / 100.0))
+            bottom_y - int(full_height * (percentage_array[i] / 100.0)),
         )
 
         # Define the position for the text (number) to be displayed on top of each bar
@@ -87,13 +91,12 @@ def draw_bar_chart_on_image(image, percentage_array, display_array, font_path):
     # Return the image with the bars and numbers drawn
     return output_image
 
-def draw_circular_progress_bar_on_image(img, percentage, position, radius = 58, thickness=18, bar_color=(254, 168, 148)):
-    # Load the existing image
-
-    # Determine the size based on the position you want the circle
-    #radius = 58 #min(img.shape[0], img.shape[1]) // 6  # Radius of the circle based on the image size
-    #thickness = 18 #int(radius / 4)  # Thickness of the progress bar based on the radius
-
+def draw_circular_progress_bar_on_image(img: np.ndarray, 
+                                        percentage: float, 
+                                        position: tuple[int, int], 
+                                        radius: int = 58, 
+                                        thickness: int =18, 
+                                        bar_color: tuple[int, int, int]=(254, 168, 148)) -> np.ndarray:
     # Draw the circular background (progress bar background)
     cv2.circle(img, position, radius, (248, 74, 141), thickness)
 
@@ -105,7 +108,12 @@ def draw_circular_progress_bar_on_image(img, percentage, position, radius = 58, 
 
     return img
 
-def add_text_to_image(image, text, font_path, size, position, color):
+def add_text_to_image(image: np.ndarray, 
+                      text: str, 
+                      font_path: str, 
+                      size: int, 
+                      position: tuple[int, int], 
+                      color: tuple[int, int, int]) -> np.ndarray:
     # Convert the image from OpenCV (BGR) to PIL (RGB) format
     image_pil = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
@@ -121,7 +129,12 @@ def add_text_to_image(image, text, font_path, size, position, color):
     # Convert the image back from PIL (RGB) to OpenCV (BGR)
     return cv2.cvtColor(np.array(image_pil), cv2.COLOR_RGB2BGR)
 
-def add_centered_custom_text(image, text, font_path, font_size, position_y, text_color):
+def add_centered_custom_text(image: np.ndarray, 
+                             text: str, 
+                             font_path: str, 
+                             font_size: int, 
+                             position_y: int, 
+                             text_color: tuple[int, int, int]) -> np.ndarray:
     # Convert OpenCV image (BGR) to PIL image (RGB)
     image_pil = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
@@ -150,7 +163,7 @@ def add_centered_custom_text(image, text, font_path, font_size, position_y, text
 
     return image_with_text
 
-def fill_year_template(year, habit_name, days_array, habit_streak):
+def fill_year_template(year: int, habit_name: str, days_array: list[int], habit_streak: int) -> np.ndarray:
 
     no_of_days = 366 if calendar.isleap(year) else 365
 
@@ -167,54 +180,54 @@ def fill_year_template(year, habit_name, days_array, habit_streak):
 
     # Load the month template image
     year_images = {
-    365: 'assets/365-year.png',
-    366: 'assets/366-year.png'}
+    365: "assets/365-year.png",
+    366: "assets/366-year.png"}
 
-    image = cv2.imread(year_images.get(no_of_days, 'assets/365-year.png'))
+    image = cv2.imread(year_images.get(no_of_days, "assets/365-year.png"))
 
     # Remove trailing zeros to match the length of available data
     while days_array and days_array[-1] == 0:
         days_array.pop()
 
     # Draw the bar chart on the image with numbers on each bar using the custom font
-    image = draw_bar_chart_on_image(image, percentage_array, days_array, 'assets/Rubik-Regular.ttf')
+    image = draw_bar_chart_on_image(image, percentage_array, days_array, "assets/Rubik-Regular.ttf")
 
     # Display circular progress bar
     image = draw_circular_progress_bar_on_image(image, success_rate, (474, 690), 65, 19)
 
     # Display the success rate
     if success_rate < 10:
-        image = add_text_to_image(image, f'{success_rate}%', 'assets/Rubik-Bold.ttf', 36, (447, 670), (154, 162, 253))
+        image = add_text_to_image(image, f"{success_rate}%", "assets/Rubik-Bold.ttf", 36, (447, 670), (154, 162, 253))
     elif success_rate < 100:
-        image = add_text_to_image(image, f'{success_rate}%', 'assets/Rubik-Bold.ttf', 36, (437, 670), (154, 162, 253))
+        image = add_text_to_image(image, f"{success_rate}%", "assets/Rubik-Bold.ttf", 36, (437, 670), (154, 162, 253))
     else:
-        image = add_text_to_image(image, f'{success_rate}%', 'assets/Rubik-Bold.ttf', 36, (426, 670), (154, 162, 253))
+        image = add_text_to_image(image, f"{success_rate}%", "assets/Rubik-Bold.ttf", 36, (426, 670), (154, 162, 253))
 
     # Display the year on the image
-    image = add_text_to_image(image, str(year), 'assets/Rubik-SemiBold.ttf', 48, (32, 12), (255, 255, 255))
+    image = add_text_to_image(image, str(year), "assets/Rubik-SemiBold.ttf", 48, (32, 12), (255, 255, 255))
 
     # Disply total days
     if total_days < 10:
-        image = add_text_to_image(image, "0" + str(total_days), 'assets/Rubik-SemiBold.ttf', 36, (122, 618), (77, 87, 200))
+        image = add_text_to_image(image, "0" + str(total_days), "assets/Rubik-SemiBold.ttf", 36, (122, 618), (77, 87, 200))
     elif total_days < 100:
-        image = add_text_to_image(image, str(total_days), 'assets/Rubik-SemiBold.ttf', 36, (118, 618), (77, 87, 200))
+        image = add_text_to_image(image, str(total_days), "assets/Rubik-SemiBold.ttf", 36, (118, 618), (77, 87, 200))
     else:
-        image = add_text_to_image(image, str(total_days), 'assets/Rubik-SemiBold.ttf', 36, (106, 618), (77, 87, 200))
+        image = add_text_to_image(image, str(total_days), "assets/Rubik-SemiBold.ttf", 36, (106, 618), (77, 87, 200))
 
     # Display streak
     if habit_streak < 10:
-        image = add_text_to_image(image, "0" + str(habit_streak), 'assets/Rubik-SemiBold.ttf', 36, (116, 722), (77, 87, 200))
+        image = add_text_to_image(image, "0" + str(habit_streak), "assets/Rubik-SemiBold.ttf", 36, (116, 722), (77, 87, 200))
     elif habit_streak < 100:
-        image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-SemiBold.ttf', 36, (116, 722), (77, 87, 200))
+        image = add_text_to_image(image, str(habit_streak), "assets/Rubik-SemiBold.ttf", 36, (116, 722), (77, 87, 200))
     else:
-        image = add_text_to_image(image, str(habit_streak), 'assets/Rubik-SemiBold.ttf', 36, (106, 722), (77, 87, 200))
+        image = add_text_to_image(image, str(habit_streak), "assets/Rubik-SemiBold.ttf", 36, (106, 722), (77, 87, 200))
 
     # Display the habit name
-    image = add_centered_custom_text(image, habit_name, 'assets/Rubik-Regular.ttf', 24, 130, (231, 216, 200))
+    image = add_centered_custom_text(image, habit_name, "assets/Rubik-Regular.ttf", 24, 130, (231, 216, 200))
 
     return image
 
-def habit_days_count_year(data, year, habit_name):
+def habit_days_count_year(data: dict, year: str, habit_name: str) -> list[int]:
     """Calculate the number of days a specific habit was performed in each month for a given year.
 
     Args:
@@ -234,36 +247,35 @@ def habit_days_count_year(data, year, habit_name):
             habit_name = "Workout"
         Output:
             [23, 25, 18, 14, 25, ...]
-    """
 
+    """
     # Define the months in order
     months_order = [
-        "January", "February", "March", "April", 
-        "May", "June", "July", "August", 
-        "September", "October", "November", "December"
+        "January", "February", "March", "April",
+        "May", "June", "July", "August",
+        "September", "October", "November", "December",
     ]
-    
+
     # Get the data for the given year
     year_data = data.get(year, {})
-    
+
     # Initialize the result array with 0 for each month
     result = [0] * 12
-    
+
     for month_index, month in enumerate(months_order):
         # Check if the month exists in the data
         if month in year_data and habit_name in year_data[month]:
             # Count the number of days the habit was performed
             result[month_index] = sum(year_data[month][habit_name])
-    
+
     # Remove trailing zeros to match the length of available data
     # while result and result[-1] == 0:
     #     result.pop()
-    
+
     return result
 
-def longest_habit_streak_across_year(data, year, habit_name):
-    """
-    Calculate the longest streak of consecutive days a specific habit was performed
+def longest_habit_streak_across_year(data: dict, year: str, habit_name: str) -> int:
+    """Calculate the longest streak of consecutive days a specific habit was performed
     across all months in a given year.
 
     Args:
@@ -280,22 +292,22 @@ def longest_habit_streak_across_year(data, year, habit_name):
             year = "2023"
             habit_name = "Workout"
         Output:
-            56  # (Example: 10 consecutive days of performing the habit)
-    """
+            56  
 
+    """
     # Get the data for the given year
     year_data = data.get(year, {})
-    
+
     longest_streak = 0
     current_streak = 0
-    
+
     # Define the months in order
     months_order = [
-        "January", "February", "March", "April", 
-        "May", "June", "July", "August", 
-        "September", "October", "November", "December"
+        "January", "February", "March", "April",
+        "May", "June", "July", "August",
+        "September", "October", "November", "December",
     ]
-    
+
     for month in months_order:
         # Check if the month exists in the data and contains the habit
         if month in year_data and habit_name in year_data[month]:
@@ -309,15 +321,15 @@ def longest_habit_streak_across_year(data, year, habit_name):
         else:
             # Reset the streak if the month or habit data is missing
             current_streak = 0
-    
+
     return longest_streak
 
-def yearly_insights_main():
-    
+def yearly_insights_main()-> None:
+
     utils.add_side_logo()
-    
+
     # Check if the user is authenticated
-    if 'user_info' not in st.session_state:
+    if "user_info" not in st.session_state:
         st.warning("Please log in from the Home page to access this feature.")
         st.stop()
 
@@ -333,15 +345,14 @@ def yearly_insights_main():
         auth_functions.sign_out()
         st.experimental_rerun()
 
-    user_email = st.session_state['user_info']['email']
+    user_email = st.session_state["user_info"]["email"]
 
     # Fetch user data dynamically
     def get_user_data(user_email):
         doc = db.collection("users").document(user_email).get()
         if doc.exists:
             return doc.to_dict()
-        else:
-            return None
+        return None
 
     # Fetch user data from Firebase
     user_data = get_user_data(user_email)
@@ -367,7 +378,7 @@ def yearly_insights_main():
 
                 # Generate the year visualization
                 output_image = fill_year_template(
-                    int(selected_year), selected_habit, days_array, habit_streak
+                    int(selected_year), selected_habit, days_array, habit_streak,
                 )
 
                 # Convert OpenCV image (BGR) to RGB
@@ -382,7 +393,7 @@ def yearly_insights_main():
 
                 # Convert the PIL image (img_pil) to bytes for download
                 img_bytes = io.BytesIO()
-                img_pil.save(img_bytes, format='PNG')  # Use the PIL image here
+                img_pil.save(img_bytes, format="PNG")  # Use the PIL image here
                 img_bytes.seek(0)
 
 
@@ -391,7 +402,7 @@ def yearly_insights_main():
                     label="Download Year Visualization",
                     data=img_bytes,
                     file_name=f"{selected_habit}_{selected_year}_Year_Visualization.png",
-                    mime="image/png"
+                    mime="image/png",
                 )
 
             except Exception as e:

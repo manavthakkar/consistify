@@ -162,7 +162,7 @@ def count_total_days(habit_array):
 def get_days_in_month(year, month_name):
     """Get the number of days in a month, considering leap years.
     """
-    month_number = list(calendar.month_name).index(month_name)  # Get the month number
+    month_number = list(calendar.month_name).index(month_name) 
     _, num_days = calendar.monthrange(year, month_number)
     return num_days
 

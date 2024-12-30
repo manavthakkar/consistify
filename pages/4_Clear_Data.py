@@ -1,120 +1,32 @@
-import streamlit as st
-from firebase_admin import credentials, firestore
-import firebase_admin
 import calendar
-import utils
+
+import streamlit as st
+
 import firebase_utils as fb_utils
+import utils
 
 st.set_page_config(page_title="Clear Data", page_icon="🗑️")
 
-# Initialize Firebase 
 db = fb_utils.initialize_firestore()
 
-def get_user_data(user_email):
-    """
-    Fetches the user's data from Firestore.
-    
-    Args:
-        user_email (str): The user email.
-    
-    Returns:
-        dict: The user's data or None if not found.
-    """
-    doc = db.collection("users").document(user_email).get()
-    return doc.to_dict() if doc.exists else None
-
-def delete_data_for_year_month(user_email, year, month):
-    """
-    Deletes data for a specific year and month from a user's document in Firestore.
-    
-    Args:
-        user_email (str): The email of the user.
-        year (str): The year to delete (e.g., "2020").
-        month (str): The month to delete (e.g., "January").
-    """
-    try:
-        # Reference the Firestore document for the user
-        user_ref = db.collection("users").document(user_email)
-
-        # Build the path to the specific year and month
-        field_path = f"{year}.{month}"
-
-        # Use Firestore's update method with DELETE_FIELD to remove the data
-        from google.cloud.firestore_v1 import DELETE_FIELD
-        user_ref.update({
-            field_path: DELETE_FIELD
-        })
-        
-        print(f"Data for {year}, {month} has been successfully deleted.")
-    except Exception as e:
-        print(f"An error occurred while deleting data: {e}")
-
-def delete_data_for_year(user_email, year):
-    """
-    Deletes all data for a specific year from a user's document in Firestore.
-    
-    Args:
-        user_email (str): The ID of the user.
-        year (str): The year to delete (e.g., "2020").
-    """
-    try:
-        # Reference the Firestore document for the user
-        user_ref = db.collection("users").document(user_email)
-
-        # Use Firestore's update method with DELETE_FIELD to remove the year data
-        from google.cloud.firestore_v1 import DELETE_FIELD
-        user_ref.update({
-            year: DELETE_FIELD
-        })
-        
-        print(f"Data for {year} has been successfully deleted for user {user_email}.")
-    except Exception as e:
-        print(f"An error occurred while deleting data: {e}")
-
-def delete_all_user_data(user_email):
-    """
-    Deletes all data for a specific user from their Firestore document.
-    
-    Args:
-        user_email (str): The email of the user.
-    """
-    try:
-        # Reference the Firestore document for the user
-        user_ref = db.collection("users").document(user_email)
-
-        # Delete the entire document
-        user_ref.delete()
-        
-        print(f"All data for user {user_email} has been successfully deleted.")
-    except Exception as e:
-        print(f"An error occurred while deleting all data for user {user_email}: {e}")
-
-def clear_data_main():
+def clear_data_main()->None:
 
     utils.add_side_logo()
 
-    # Check if the user is authenticated
-    if 'user_info' not in st.session_state:
+    if "user_info" not in st.session_state:
         st.warning("Please log in from the Home page to access this feature.")
         st.stop()
 
     st.title("Clear Data")
-
-    # Display user details
-    #st.image(st.session_state['user_info'].get('picture'), width=80)
-    #st.write(f"**Hello, {st.session_state['user_info'].get('name')}!**")
-    #st.write(f"Your email: **{st.session_state['user_info'].get('email')}**")
     st.write(f"**Logged in as :** {st.session_state['user_info'].get('email')}")
-    user_email = st.session_state['user_info'].get('email')
 
-    # Fetch user data
-    user_data = get_user_data(user_email)
+    user_email = st.session_state["user_info"].get("email")
+
+    user_data = fb_utils.get_all_user_data(db, user_email)
 
     if user_data:
-        #st.subheader("Clear Data Options")
         st.write("You can delete all your data or data for a specific year or month.")
 
-        # Options to delete data
         clear_data_options = ["All Data", "Data for a Specific Year", "Data for a Specific Month"]
         clear_data_choice = st.radio("Select an option:", clear_data_options)
 
@@ -122,8 +34,7 @@ def clear_data_main():
             st.warning("You are about to delete all your data. This action cannot be undone.")
             if st.button("Delete All Data"):
                 try:
-                    # Call function to delete all data for the user
-                    delete_all_user_data(user_email)
+                    fb_utils.delete_all_user_data(db, user_email)
                     st.success("All data has been successfully deleted.")
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
@@ -135,8 +46,7 @@ def clear_data_main():
 
             if st.button(f"Delete Data for {selected_year}"):
                 try:
-                    # Call function to delete data for the specific year
-                    delete_data_for_year(user_email, selected_year)
+                    fb_utils.delete_data_for_year(db, user_email, selected_year)
                     st.success(f"Data for {selected_year} has been successfully deleted.")
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
@@ -152,13 +62,12 @@ def clear_data_main():
 
                 if st.button(f"Delete Data for {selected_month} {selected_year}"):
                     try:
-                        # Call function to delete data for the specific year and month
-                        delete_data_for_year_month(user_email, selected_year, selected_month)
+                        fb_utils.delete_data_for_year_month(db, user_email, selected_year, selected_month)
                         st.success(f"Data for {selected_month} {selected_year} has been successfully deleted.")
                     except Exception as e:
                         st.error(f"An error occurred: {e}")
     else:
-        st.error("No data found for your user ID.")
+        st.error("No data found.")
 
 if __name__ == "__main__":
     clear_data_main()

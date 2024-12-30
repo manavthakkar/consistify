@@ -1,9 +1,10 @@
+
 import streamlit as st
-import utils
 from PIL import Image
-import json
 from st_social_media_links import SocialMediaIcons
+
 import auth_functions
+import utils
 
 st.set_page_config(page_title="Home", page_icon="🏠", layout="centered")
 
@@ -16,7 +17,7 @@ def home_page():
     utils.add_side_logo()
 
     # If the user is authenticated, display navigation and user details
-    if 'user_info' not in st.session_state:
+    if "user_info" not in st.session_state:
         st.markdown("""
         Transform your habits, transform your life – one day at a time with Consistify! ✨  
         Log in to unlock 🔓 personalized insights and take control of your progress. 📊🚀
@@ -25,28 +26,28 @@ def home_page():
         st.write("")
 
         col1, col2, col3 = st.columns([1, 2, 1])
-        do_you_have_an_account = col2.selectbox(label='Do you have an account?', options=('Yes', 'No', 'I forgot my password'))
-        auth_form = col2.form(key='Authentication form', clear_on_submit=False)
-        email = auth_form.text_input(label='Email')
-        password = auth_form.text_input(label='Password', type='password') if do_you_have_an_account in {'Yes', 'No'} else auth_form.empty()
+        do_you_have_an_account = col2.selectbox(label="Do you have an account?", options=("Yes", "No", "I forgot my password"))
+        auth_form = col2.form(key="Authentication form", clear_on_submit=False)
+        email = auth_form.text_input(label="Email")
+        password = auth_form.text_input(label="Password", type="password") if do_you_have_an_account in {"Yes", "No"} else auth_form.empty()
         auth_notification = col2.empty()
 
-        if do_you_have_an_account == 'Yes' and auth_form.form_submit_button(label='Sign In', use_container_width=True, type='primary'):
-            with auth_notification, st.spinner('Signing in'):
+        if do_you_have_an_account == "Yes" and auth_form.form_submit_button(label="Sign In", use_container_width=True, type="primary"):
+            with auth_notification, st.spinner("Signing in"):
                 auth_functions.sign_in(email, password)
-            
-        elif do_you_have_an_account == 'No' and auth_form.form_submit_button(label='Create Account', use_container_width=True, type='primary'):
-            with auth_notification, st.spinner('Creating account'):
+
+        elif do_you_have_an_account == "No" and auth_form.form_submit_button(label="Create Account", use_container_width=True, type="primary"):
+            with auth_notification, st.spinner("Creating account"):
                 auth_functions.create_account(email, password)
-        
-        elif do_you_have_an_account == 'I forgot my password' and auth_form.form_submit_button(label='Send Password Reset Email', use_container_width=True, type='primary'):
-            with auth_notification, st.spinner('Sending password reset link'):
+
+        elif do_you_have_an_account == "I forgot my password" and auth_form.form_submit_button(label="Send Password Reset Email", use_container_width=True, type="primary"):
+            with auth_notification, st.spinner("Sending password reset link"):
                 auth_functions.reset_password(email)
 
-        if 'auth_success' in st.session_state:
+        if "auth_success" in st.session_state:
             auth_notification.success(st.session_state.auth_success)
             del st.session_state.auth_success
-        elif 'auth_warning' in st.session_state:
+        elif "auth_warning" in st.session_state:
             auth_notification.warning(st.session_state.auth_warning)
             del st.session_state.auth_warning
 
@@ -60,7 +61,7 @@ def home_page():
 
             With these insights, you can easily monitor your progress, uncover trends, and stay inspired to achieve your goals. Whether you’re building new habits or strengthening existing ones, **Consistify** provides the feedback you need to succeed. 🚀
                                 """)
-        
+
         st.subheader("How to Use Consistify 🛠️")
         st.markdown("""
         1. **Print and Fill the Template** 📝: Download the habit tracking template and keep it handy. Mark a ❌ each day you complete a habit.
@@ -68,8 +69,8 @@ def home_page():
         3. **Let the Magic Happen** ✨: Our app analyzes the image, extracts all habit data, and stores it securely.
         4. **Get Insights** 📊: View your **monthly** and **yearly habit insights** to track your progress over time.
         5. **Manage Your Data** 🗑️: Delete your **monthly**, **yearly**, or **lifetime data** anytime for full control.""")
-        
-        template_link = "https://drive.google.com/file/d/1cpl8YLXIe4vJfZ4hAozNPmR3PP9_IRaU/view?usp=sharing"  
+
+        template_link = "https://drive.google.com/file/d/1cpl8YLXIe4vJfZ4hAozNPmR3PP9_IRaU/view?usp=sharing"
         st.markdown(f"[📥 Download the consistify template]({template_link})")
 
         st.write("**Filled template example:**")
@@ -82,14 +83,14 @@ def home_page():
                 
         You can try uploading this image as well 😉
         """)
-        
+
         # Display Template Image
-        template_image_path = "assets/example.png"  
+        template_image_path = "assets/example.png"
         template_image = Image.open(template_image_path)
         st.image(template_image, caption="Filled template example 🖼️", use_container_width=True)
 
         # Display Template Image
-        # processed_image_path = "assets/processed-example.png"  
+        # processed_image_path = "assets/processed-example.png"
         # processed_image = Image.open(processed_image_path)
         # st.image(processed_image, caption="Processed template example 🖼️", use_container_width=True)
 
@@ -132,10 +133,10 @@ def home_page():
 
         social_media_links = [
         "https://www.linkedin.com/in/manavt2000",
-        "https://github.com/manavthakkar"
+        "https://github.com/manavthakkar",
         ]
 
-        social_media_icons = SocialMediaIcons(social_media_links) 
+        social_media_icons = SocialMediaIcons(social_media_links)
 
         social_media_icons.render(sidebar=False, justify_content="space-evenly")
 
