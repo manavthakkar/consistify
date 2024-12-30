@@ -5,11 +5,11 @@ import cv2
 import numpy as np
 import streamlit as st
 
-def rectContour(contours):
+def rectContour(contours: tuple[np.ndarray]) -> list[np.ndarray]:
     """It takes the contours as input and returns the rectangle contours
 
     """
-    rectCon = []                        # List to store all rectangle contours
+    rectCon = []                        
     for i in contours:
         area = cv2.contourArea(i)
         # print(area)
@@ -19,10 +19,9 @@ def rectContour(contours):
             if len(approx) == 4: # If the contour has 4 corners
                 rectCon.append(i)
     rectCon = sorted(rectCon, key=cv2.contourArea,reverse=True) # Sort the contours by area in descending order
-    #print(len(rectCon))
     return rectCon
 
-def getCornerPoints(cont):
+def getCornerPoints(cont: np.ndarray) -> np.ndarray:
     """This function takes the contour as input and returns the corner points of the contour
 
     """
@@ -30,7 +29,7 @@ def getCornerPoints(cont):
     approx = cv2.approxPolyDP(cont, 0.02 * peri, True) # APPROXIMATE THE POLY TO GET CORNER POINTS
     return approx
 
-def reorder(myPoints):
+def reorder(myPoints: np.ndarray) -> np.ndarray:
     """This function takes the points as input and returns the arranged points (of the rectangle)
     for example, it will return the points in the following order:
     [top-left, top-right, bottom-left, bottom-right]
@@ -40,8 +39,6 @@ def reorder(myPoints):
     #print(myPoints)
     myPointsNew = np.zeros((4, 1, 2), np.int32) # NEW MATRIX WITH ARRANGED POINTS
     add = myPoints.sum(1)
-    #print(add)
-    #print(np.argmax(add))
     myPointsNew[0] = myPoints[np.argmin(add)]  #[0,0]    # origin point has the smallest sum
     myPointsNew[3] =myPoints[np.argmax(add)]   #[w,h]    # w+h gives the largest sum
     diff = np.diff(myPoints, axis=1)
@@ -51,7 +48,7 @@ def reorder(myPoints):
     return myPointsNew
 
 
-def splitBoxes(img, rows=6, cols=31):
+def splitBoxes(img: np.ndarray, rows: int = 6, cols: int = 31)-> list[np.ndarray]:
     """This function takes the image as input and returns the split boxes (rowsxcols)
     """
     rows = np.vsplit(img, rows)  # SPLIT THE IMAGE INTO GIVEN ROWS
@@ -71,7 +68,7 @@ def splitBoxes(img, rows=6, cols=31):
 
     return boxes
 
-def draw_circles_on_image(image, binary_array):
+def draw_circles_on_image(image: np.ndarray, binary_array: np.ndarray) -> np.ndarray:
     """Draws circles on the provided image based on the binary_array where 1s indicate the positions of the circles.
 
     Parameters
@@ -105,7 +102,10 @@ def draw_circles_on_image(image, binary_array):
 
     return image
 
-def apply_stats_to_image(image, stats, suffix_text="", vertical_adjustment_factor=0.1):
+def apply_stats_to_image(image: np.ndarray, 
+                         stats: list[int], 
+                         suffix_text: str = "", 
+                         vertical_adjustment_factor: float = 0.1) -> np.ndarray:
     """Apply stats to an image with evenly distributed boxes and return the annotated image.
 
     Args:
@@ -154,19 +154,19 @@ def apply_stats_to_image(image, stats, suffix_text="", vertical_adjustment_facto
 
     return image
 
-def count_total_days(habit_array):
+def count_total_days(habit_array: np.ndarray) -> np.ndarray:
     # Sum each column to get the number of days each habit was performed
     days_performed = np.sum(habit_array, axis=0)
     return days_performed
 
-def get_days_in_month(year, month_name):
+def get_days_in_month(year: int, month_name: str) -> int:
     """Get the number of days in a month, considering leap years.
     """
     month_number = list(calendar.month_name).index(month_name) 
     _, num_days = calendar.monthrange(year, month_number)
     return num_days
 
-def get_longest_streak(habit_array):
+def get_longest_streak(habit_array: np.ndarray) -> np.ndarray:
     """Calculate the longest streak of consecutive days each habit was performed.
 
     Parameters
@@ -194,7 +194,7 @@ def get_longest_streak(habit_array):
     streaks = np.array([calculate_streak(habit_array[:, col]) for col in range(habit_array.shape[1])])
     return streaks
 
-def detect_month(array):
+def detect_month(array: np.ndarray) -> tuple[int, str]:
     """This function takes a 2D numpy array where each row represents values for
     four consecutive months and returns the month number (1-based index) and 
     the name of the month that has the highest value.
@@ -239,7 +239,7 @@ def detect_month(array):
 
     return month, month_name
 
-def draw_month_on_image(image, month): # deprecated, but might be useful for reference
+def draw_month_on_image(image: np.ndarray, month: int) -> np.ndarray: # deprecated, but might be useful for reference
     """Annotates an image by drawing a circle in a grid cell corresponding to a specified month.
 
     This function divides an image into a grid of 3 rows and 4 columns, where each cell in the grid
@@ -294,7 +294,7 @@ def draw_month_on_image(image, month): # deprecated, but might be useful for ref
     # Return the modified image
     return image
 
-def draw_month_on_image_with_top_row(image, month):
+def draw_month_on_image_with_top_row(image: np.ndarray, month: int) -> np.ndarray:
     """Annotates an image by drawing a circle in a grid cell corresponding to a specified month,
     while ignoring the extra top row.
 
@@ -354,60 +354,9 @@ def draw_month_on_image_with_top_row(image, month):
     return image
 
 
-def calculate_streaks(habits_array, position="end"):
-    """Calculate the longest streak of performed habits (represented by 1's) at the start or end of the month.
-    
-    This function takes a 2D numpy array where each row represents a habit and each column represents 
-    a day in the month. The value 1 indicates the habit was performed on that day, and 0 indicates 
-    it was not performed. The function returns a list of the longest streaks of consecutive 1's 
-    at the specified position (start or end) of each habit's array.
-
-    Parameters
-    ----------
-    habits_array (numpy.ndarray): 2D array with shape (number_of_habits, number_of_days_in_month).
-    position (str): Specifies whether to calculate the streak at the 'start' or 'end' of the month. 
-                    Default is 'end'.
-
-    Returns
-    -------
-    list: A list of integers representing the longest streak of 1's at the specified position of each habit's array.
-    
-    Example:
-    >>> habits_array = np.array([
-    ...     [1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1],
-    ...     [1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-    ...     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    ...     [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-    ...     [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    ...     [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1]
-    ... ])
-    >>> calculate_streaks(habits_array, position='start')
-    [1, 2, 1, 7, 3, 0]
-    >>> calculate_streaks(habits_array, position='end')
-    [3, 4, 0, 2, 0, 6]
-
-    """
-    streaks = []
-    for habit in habits_array:
-        streak = 0
-        if position == "end":
-            for day in reversed(habit):
-                if day == 1:
-                    streak += 1
-                else:
-                    break
-        elif position == "start":
-            for day in habit:
-                if day == 1:
-                    streak += 1
-                else:
-                    break
-        else:
-            raise ValueError("Position must be 'start' or 'end'")
-        streaks.append(streak)
-    return streaks
-
-def mask_outside_rectangle(image, rectangle_coords, offset=0):
+def mask_outside_rectangle(image: np.ndarray, 
+                           rectangle_coords: np.ndarray, 
+                           offset: int = 0) -> np.ndarray:
     """Mask outside of the given rectangle coordinates in the image with white pixels.
 
     Parameters
@@ -445,7 +394,7 @@ def mask_outside_rectangle(image, rectangle_coords, offset=0):
 
     return result
 
-def create_collage(image1, image2, scale=0.6):
+def create_collage(image1: np.ndarray, image2: np.ndarray, scale: float = 0.6)-> np.ndarray:
     """Creates a side-by-side collage of two images of the same dimensions and scales the final image.
 
     Parameters
@@ -477,13 +426,13 @@ def create_collage(image1, image2, scale=0.6):
 
 ############################ Streamlit related functions ############################
 
-def get_base64_image(file_path):
+def get_base64_image(file_path: str) -> str:
     with open(file_path, "rb") as file:
         data = file.read()
     return base64.b64encode(data).decode("utf-8")
 
 # Function to add logo at the absolute top of the sidebar
-def add_side_logo():
+def add_side_logo() -> None:
 
     base64_image = get_base64_image("assets/consistify-logo.png")
 
