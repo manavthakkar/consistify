@@ -70,10 +70,16 @@ def home_page():
         4. **Get Insights** 📊: View your **monthly** and **yearly habit insights** to track your progress over time.
         5. **Manage Your Data** 🗑️: Delete your **monthly**, **yearly**, or **lifetime data** anytime for full control.""")
 
-        template_link = "https://drive.google.com/file/d/1cpl8YLXIe4vJfZ4hAozNPmR3PP9_IRaU/view?usp=sharing"
-        st.markdown(f"[📥 Download the consistify template]({template_link})")
+        st.write("")
 
-        st.write("**Filled template example:**")
+        # Create three columns
+        col1, col2, col3 = st.columns([2, 2, 1])  
+
+        with col2:
+            template_link = "https://drive.google.com/file/d/1cpl8YLXIe4vJfZ4hAozNPmR3PP9_IRaU/view?usp=sharing"
+            st.link_button("Download the template", f"{template_link}")
+
+        st.write("#### **Filled template example**")
         st.markdown("""
         **Cover the portion of the template when clicking a picture as shown in the image below**. 
         This is required by the system to detect the markers accurately. 
