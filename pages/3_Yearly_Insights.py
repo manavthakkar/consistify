@@ -378,7 +378,7 @@ def yearly_insights_main()-> None:
 
                 # Generate the year visualization
                 output_image = fill_year_template(
-                    int(selected_year), selected_habit, days_array, habit_streak,
+                    int(selected_year), selected_habit.title(), days_array, habit_streak,
                 )
 
                 # Convert OpenCV image (BGR) to RGB

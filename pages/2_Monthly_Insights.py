@@ -318,7 +318,7 @@ def monthly_insights_main() -> None:
 
                 # Create the filled month template
                 filled_image = fill_month_template(
-                    month_number, int(selected_year), selected_habit, total_days, habit_array,
+                    month_number, int(selected_year), selected_habit.title(), total_days, habit_array,
                 )
 
                 # Convert OpenCV image (BGR) to RGB
