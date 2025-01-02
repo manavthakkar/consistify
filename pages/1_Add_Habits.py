@@ -166,14 +166,13 @@ def process_image_and_extract_data(
     return imgFinal, month_name, binary_array
 
 def add_habits_main() -> None:
-    """Handle user interactions for uploading and processing habit tracker images.
+    """Handle user interactions for uploading or capturing habit tracker images.
 
-    This function handles user interactions for uploading habit tracker images,
-    processing the images, and saving the extracted data to Firebase.
+    This function handles user interactions for either uploading habit tracker images,
+    capturing them using a camera widget, and processing the images.
 
     Returns:
         None
-
     """
     utils.add_side_logo()
 
@@ -186,17 +185,25 @@ def add_habits_main() -> None:
         auth_functions.sign_out()
         st.rerun()
 
-    st.title("Upload Your Habit Tracker Image")
+    st.title("Upload or Capture Your Habit Tracker Image")
     st.write(f"**Logged in as :** {st.session_state['user_info'].get('email')}")
 
     user_email = st.session_state["user_info"]["email"]
 
     year = st.number_input("Enter the year : ", min_value=2020, max_value=2100, value=2024, step=1)
 
-    uploaded_file = st.file_uploader("Upload your habit tracker image :", type=["jpg", "jpeg", "png"])
+    # Option to choose between upload and capture
+    option = st.radio("Select how you want to provide the image:", ["Upload Image", "Capture Image"])
+
+    uploaded_file = None
+    if option == "Upload Image":
+        uploaded_file = st.file_uploader("Upload your habit tracker image :", type=["jpg", "jpeg", "png"])
+    elif option == "Capture Image":
+        captured_image = st.camera_input("Capture your habit tracker image:")
+        if captured_image:
+            uploaded_file = captured_image
 
     if uploaded_file:
-
         percentage_threshold = st.slider(
             "Change the slider value in case of incorrect detection:",
             min_value=0,
@@ -206,8 +213,7 @@ def add_habits_main() -> None:
             help="Increasing the value will reduce the number of detected checkboxes and vice versa.",
         )
 
-
-        # Convert uploaded file to OpenCV format
+        # Convert uploaded file or captured image to OpenCV format
         file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
         img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
 
@@ -218,8 +224,7 @@ def add_habits_main() -> None:
             collage_image_rgb = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
 
             # Display the processed results
-            st.image(collage_image_rgb, caption="Processed Image",
-                                        use_container_width=True)
+            st.image(collage_image_rgb, caption="Processed Image", use_container_width=True)
 
             st.write(f"**Detected Month:** {month_name}")
 
@@ -227,15 +232,12 @@ def add_habits_main() -> None:
             st.subheader(f"Enter Habit Names for {month_name}, {year}")
             habit_names = []
             for i in range(binary_array.shape[1]):
-                habit_name = st.text_input(f"Enter name for Habit {i + 1}",
-                                           value=f"Habit {i + 1}")
-
+                habit_name = st.text_input(f"Enter name for Habit {i + 1}", value=f"Habit {i + 1}")
                 habit_names.append(habit_name.capitalize())
 
             st.info("Enter habit names consistently, as in previous months, to ensure accurate yearly insights.")
 
-            habit_data = {habit_names[i]: binary_array[:, i].tolist()
-                          for i in range(binary_array.shape[1])}
+            habit_data = {habit_names[i]: binary_array[:, i].tolist() for i in range(binary_array.shape[1])}
 
             # Prepare data to store in Firebase
             extracted_data = {
@@ -249,8 +251,7 @@ def add_habits_main() -> None:
             existing_data = fb_utils.get_user_data(db, user_email, year, month_name)
             if existing_data:
                 st.write("Data already exists for this user, year, and month.")
-                overwrite = st.radio("Do you want to overwrite the existing data?",
-                                     ("No", "Yes"))
+                overwrite = st.radio("Do you want to overwrite the existing data?", ("No", "Yes"))
                 if overwrite == "Yes" and st.button("Save Data"):
                     fb_utils.delete_data_for_year_month(db, user_email, year, month_name)
                     fb_utils.store_user_data(db, user_email, extracted_data)
