@@ -233,7 +233,7 @@ def add_habits_main() -> None:
             habit_names = []
             for i in range(binary_array.shape[1]):
                 habit_name = st.text_input(f"Enter name for Habit {i + 1}", value=f"Habit {i + 1}")
-                habit_names.append(habit_name.capitalize())
+                habit_names.append(habit_name.strip().capitalize())
 
             st.info("Enter habit names consistently, as in previous months, to ensure accurate yearly insights.")
 
